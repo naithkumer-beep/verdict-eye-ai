@@ -34,11 +34,11 @@ interface NavItem {
   icon: typeof LayoutDashboard;
 }
 
-const NAV: NavItem[] = [
-  { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+const BASE_NAV: NavItem[] = [
   { to: "/reports", labelKey: "nav.reports", icon: FileText },
   { to: "/reports/new", labelKey: "nav.newReport", icon: PlusCircle },
   { to: "/map", labelKey: "nav.map", icon: MapIcon },
+  { to: "/rewards", labelKey: "nav.rewards", icon: Trophy },
   { to: "/emergency", labelKey: "nav.emergency", icon: Phone },
   { to: "/notifications", labelKey: "nav.notifications", icon: Bell },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
@@ -51,6 +51,55 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user, role, signOut } = useAuthStore();
   const isModerator = useIsModerator();
   const { t } = useTranslation();
+  const qc = useQueryClient();
+
+  const NAV: NavItem[] = isModerator
+    ? [{ to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard }, ...BASE_NAV]
+    : BASE_NAV;
+
+  // Unread notifications count (real-time)
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["unread-notifications", user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("read", false);
+      return count ?? 0;
+    },
+    enabled: !!user,
+  });
+
+  // Global realtime subscriber: refresh badge + toast on new notifications
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`shell-notif-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const n = payload.new as { title?: string; message?: string; type?: string };
+          qc.invalidateQueries({ queryKey: ["unread-notifications"] });
+          qc.invalidateQueries({ queryKey: ["notifications"] });
+          if (n.type === "reward_earned") {
+            qc.invalidateQueries({ queryKey: ["reward-events"] });
+            qc.invalidateQueries({ queryKey: ["rewards-profile"] });
+            qc.invalidateQueries({ queryKey: ["reward-profile"] });
+          }
+          sonnerToast(n.title ?? "Notification", { description: n.message });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        () => qc.invalidateQueries({ queryKey: ["unread-notifications"] }),
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [user, qc]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -74,6 +123,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             location.pathname === item.to ||
             (item.to !== "/dashboard" && location.pathname.startsWith(item.to));
           const Icon = item.icon;
+          const showBadge = item.to === "/notifications" && unread > 0;
           return (
             <Link
               key={item.to}
@@ -88,7 +138,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               )}
             >
               <Icon className="h-4 w-4" />
-              {t(item.labelKey)}
+              <span className="flex-1">{t(item.labelKey)}</span>
+              {showBadge && (
+                <Badge className="h-4 min-w-4 justify-center bg-accent px-1 font-mono text-[10px] text-accent-foreground">
+                  {unread > 99 ? "99+" : unread}
+                </Badge>
+              )}
             </Link>
           );
         })}
