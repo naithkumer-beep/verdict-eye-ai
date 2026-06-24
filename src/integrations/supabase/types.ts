@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_predictions: {
+        Row: {
+          generated_at: string
+          kind: string
+          payload: Json
+        }
+        Insert: {
+          generated_at?: string
+          kind: string
+          payload: Json
+        }
+        Update: {
+          generated_at?: string
+          kind?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -47,6 +65,24 @@ export type Database = {
           ip_address?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      cost_estimates: {
+        Row: {
+          category: Database["public"]["Enums"]["report_category"]
+          estimated_cost_mmk: number
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["report_category"]
+          estimated_cost_mmk?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["report_category"]
+          estimated_cost_mmk?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -594,6 +630,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      escalate_overdue_reports: { Args: never; Returns: number }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
