@@ -149,9 +149,11 @@ function DashboardPage() {
             </div>
           </div>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/reports/new">Earn more <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
-        </Button>
+        {!isAdmin && (
+          <Button asChild variant="outline" size="sm">
+            <Link to="/reports/new">Earn more <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+          </Button>
+        )}
       </Card>
 
       {/* Stat tiles */}
