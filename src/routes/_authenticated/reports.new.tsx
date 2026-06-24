@@ -437,7 +437,7 @@ function NewReport() {
                 />
               </ClientOnly>
               <p className="text-[11px] text-muted-foreground">
-                We auto-capture your live GPS. You can also click anywhere on the map to drop a pin{coords && ` · ${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`}
+                We auto-capture your live GPS. You can also click anywhere on the map to drop a pin{coords && ` · ${localNum(coords[0].toFixed(5))}, ${localNum(coords[1].toFixed(5))}`}
               </p>
             </div>
 
@@ -527,7 +527,7 @@ function NewReport() {
             <div>
               <div className="text-sm font-medium">Validation pipeline</div>
               <div className="text-xs text-muted-foreground">
-                {completed}/{stages.length} stages cleared
+                {localNum(completed)}/{localNum(stages.length)} stages cleared
               </div>
             </div>
             <ShieldCheck className="h-4 w-4 text-accent" />
