@@ -63,6 +63,22 @@ function RewardsPage() {
     enabled: !!user,
   });
 
+  // Map of report_id -> report_code so users can filter/display by short code
+  const { data: reportCodeMap = {} } = useQuery({
+    queryKey: ["my-report-codes", user?.id],
+    queryFn: async () => {
+      if (!user) return {} as Record<string, string>;
+      const { data } = await supabase
+        .from("reports")
+        .select("id,report_code")
+        .eq("user_id", user.id);
+      const map: Record<string, string> = {};
+      for (const r of data ?? []) if ((r as any).report_code) map[r.id] = (r as any).report_code;
+      return map;
+    },
+    enabled: !!user,
+  });
+
   // Real-time updates whenever new points are awarded
   useEffect(() => {
     if (!user) return;
