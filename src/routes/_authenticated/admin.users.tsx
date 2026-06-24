@@ -91,6 +91,15 @@ function AdminUsersPage() {
       toast.error(insErr.message);
       return;
     }
+    if (me?.id) {
+      await supabase.from("audit_logs").insert({
+        user_id: me.id,
+        action: "user.role_change",
+        entity_type: "user",
+        entity_id: userId,
+        details: { to: newRole },
+      });
+    }
     toast.success(`Role updated to ${newRole}`);
     void qc.invalidateQueries({ queryKey: ["admin-users"] });
   };
