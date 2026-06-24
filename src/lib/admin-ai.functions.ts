@@ -93,6 +93,49 @@ export const runEscalation = createServerFn({ method: "POST" })
     return { escalated: (data as unknown as number) ?? 0 };
   });
 
+// List all users with email + role (admin-only). Uses service-role client
+// because the public profiles SELECT policy hides the email column from
+// regular authenticated reads.
+export const listAdminUsers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [{ data: profiles, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
+      supabaseAdmin
+        .from("profiles")
+        .select("id,email,display_name,avatar_url,created_at")
+        .order("created_at", { ascending: false }),
+      supabaseAdmin.from("user_roles").select("user_id,role"),
+    ]);
+    if (pErr) throw pErr;
+    if (rErr) throw rErr;
+
+    type Role = "user" | "moderator" | "admin";
+    const rank = (x: Role) => (x === "admin" ? 3 : x === "moderator" ? 2 : 1);
+    const roleByUser = new Map<string, Role>();
+    for (const r of roles ?? []) {
+      const cur = roleByUser.get(r.user_id);
+      const next = r.role as Role;
+      if (!cur || rank(next) > rank(cur)) roleByUser.set(r.user_id, next);
+    }
+
+    return (profiles ?? []).map((p) => ({
+      id: p.id as string,
+      email: (p.email as string | null) ?? null,
+      display_name: (p.display_name as string | null) ?? null,
+      avatar_url: (p.avatar_url as string | null) ?? null,
+      created_at: p.created_at as string,
+      role: roleByUser.get(p.id as string) ?? ("user" as Role),
+    }));
+  });
+
 // AI auto role suggestion — analyses a user's report history and recommends a role.
 export const suggestUserRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
