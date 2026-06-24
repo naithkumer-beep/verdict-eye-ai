@@ -15,7 +15,6 @@ import {
   Clock,
   AlertCircle,
   Zap,
-  Eye,
   Gauge,
   Sparkles,
 } from "lucide-react";
