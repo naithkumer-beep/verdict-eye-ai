@@ -255,7 +255,9 @@ function NewReport() {
             title: title.trim(),
             description: description.trim(),
             category,
-            department: department.trim() || null,
+            department: resolvedDept?.name_en ?? null,
+            department_id: resolvedDept?.id ?? null,
+
             location: location.trim() || null,
             latitude: coords?.[0] ?? null,
             longitude: coords?.[1] ?? null,
@@ -379,15 +381,27 @@ function NewReport() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="dept">Department (optional)</Label>
-              <Input
-                id="dept"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                placeholder="Public Works"
-                maxLength={80}
-              />
+              <Label htmlFor="dept">Department</Label>
+              <Select value={department} onValueChange={setDepartment}>
+                <SelectTrigger id="dept">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">
+                    Auto · {resolvedDept?.name_en ?? "—"}
+                  </SelectItem>
+                  {departments.map((d) => (
+                    <SelectItem key={d.code} value={d.code}>
+                      {d.name_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                Auto-routes by category. Admins can override on review.
+              </p>
             </div>
+
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="loc">Location (Yangon street / township)</Label>
               <Input
