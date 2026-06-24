@@ -181,28 +181,28 @@ function LandingPage() {
           </div>
 
           <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
+            {([
               ["1", Camera, "Snap a photo", "Open CivicLens AI, choose the category, attach a clear photo of the issue."],
               ["2", MapIcon, "Pin the location", "We auto-capture your GPS, or you drop a pin anywhere on the Yangon map."],
               ["3", Building2, "Auto-routed", "Your report is automatically assigned to the right authority — YCDC, YESC, or Police."],
               ["4", CheckCircle2, "Tracked & resolved", "Follow the status live. When an admin marks it resolved, you get notified."],
-            ].map(([n, Icon, title, body]) => (
+            ] as const).map(([n, Icon, title, body]) => (
               <li
-                key={n as string}
+                key={n}
                 className="rounded-lg border border-border bg-card p-5"
               >
                 <div className="mb-3 flex items-center justify-between">
                   <div className="grid h-8 w-8 place-items-center rounded-md border border-border bg-background font-mono text-sm font-semibold tabular-nums">
-                    {n as string}
+                    {n}
                   </div>
-                  {/* @ts-expect-error icon */}
                   <Icon className="h-5 w-5 text-accent" />
                 </div>
-                <div className="font-medium">{title as string}</div>
-                <div className="mt-1 text-sm text-muted-foreground">{body as string}</div>
+                <div className="font-medium">{title}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{body}</div>
               </li>
             ))}
           </ol>
+
         </div>
       </section>
 
