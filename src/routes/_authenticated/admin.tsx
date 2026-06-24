@@ -2,7 +2,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { ShieldCheck, Trash2 } from "lucide-react";
+import { ShieldCheck, Trash2, Users, Building2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,15 +86,25 @@ function AdminPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
-      <div className="flex items-center gap-2">
-        <ShieldCheck className="h-5 w-5 text-accent" />
-        <div>
-          <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            Admin
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-accent" />
+          <div>
+            <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              Admin
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Moderation queue</h1>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Moderation queue</h1>
         </div>
+        {isAdmin && (
+          <Button asChild variant="outline" size="sm">
+            <Link to="/admin/users">
+              <Users className="mr-1.5 h-3.5 w-3.5" /> User management
+            </Link>
+          </Button>
+        )}
       </div>
+
 
       <Card className="overflow-hidden p-0">
         <div className="hidden grid-cols-12 gap-3 border-b border-border bg-secondary/40 px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:grid">
@@ -119,10 +129,16 @@ function AdminPage() {
                   {r.title}
                 </Link>
                 <div className="truncate text-xs text-muted-foreground">{r.description}</div>
+                {r.department && (
+                  <div className="mt-1 flex items-center gap-1 text-[11px] text-accent">
+                    <Building2 className="h-3 w-3" /> {r.department}
+                  </div>
+                )}
               </div>
               <div className="truncate text-xs text-muted-foreground sm:col-span-2">
                 {getCategoryLabel(r.category)}
               </div>
+
               <div className="sm:col-span-3">
                 {isAdmin ? (
                   <Select value={r.status} onValueChange={(v) => changeStatus(r.id, v)}>

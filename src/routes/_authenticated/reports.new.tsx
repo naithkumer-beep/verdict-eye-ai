@@ -2,7 +2,7 @@
 import { createFileRoute, useNavigate, ClientOnly } from "@tanstack/react-router";
 import { YangonMap } from "@/components/yangon-map";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
@@ -82,6 +82,27 @@ function NewReport() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [locating, setLocating] = useState(false);
+
+  // Auto-capture live GPS location on mount
+  useEffect(() => {
+    if (!navigator.geolocation || coords) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords([pos.coords.latitude, pos.coords.longitude]);
+        setLocating(false);
+        toast.success("Live location captured");
+      },
+      () => {
+        setLocating(false);
+        // Silent — user can pin manually
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const updateStage = (key: string, status: StageStatus, detail?: string) => {
     setStages((prev) =>
@@ -346,24 +367,46 @@ function NewReport() {
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <div className="flex items-center justify-between">
-                <Label>Pin on map (Yangon)</Label>
+                <Label className="flex items-center gap-1.5">
+                  Pin on map (Yangon)
+                  {locating && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-info/10 px-2 py-0.5 font-mono text-[10px] uppercase text-info">
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" /> Locating…
+                    </span>
+                  )}
+                  {coords && !locating && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 font-mono text-[10px] uppercase text-success">
+                      ● Live GPS
+                    </span>
+                  )}
+                </Label>
                 <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
+                    disabled={locating}
                     onClick={() => {
                       if (!navigator.geolocation) {
                         toast.error("Geolocation not supported");
                         return;
                       }
+                      setLocating(true);
                       navigator.geolocation.getCurrentPosition(
-                        (pos) => setCoords([pos.coords.latitude, pos.coords.longitude]),
-                        () => toast.error("Could not get your location"),
+                        (pos) => {
+                          setCoords([pos.coords.latitude, pos.coords.longitude]);
+                          setLocating(false);
+                          toast.success("Live location updated");
+                        },
+                        () => {
+                          setLocating(false);
+                          toast.error("Could not get your location");
+                        },
+                        { enableHighAccuracy: true, timeout: 8000 },
                       );
                     }}
                   >
-                    Use my location
+                    Use my live location
                   </Button>
                   {coords && (
                     <Button type="button" variant="ghost" size="sm" onClick={() => setCoords(null)}>
@@ -381,9 +424,10 @@ function NewReport() {
                 />
               </ClientOnly>
               <p className="text-[11px] text-muted-foreground">
-                Click anywhere on the map to drop a pin{coords && ` · ${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`}
+                We auto-capture your live GPS. You can also click anywhere on the map to drop a pin{coords && ` · ${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`}
               </p>
             </div>
+
           </div>
 
 

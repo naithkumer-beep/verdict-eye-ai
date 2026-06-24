@@ -1,18 +1,28 @@
-// Map view of all reports across Yangon.
+// Map view of all reports across Yangon, filterable by status and category.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ClientOnly } from "@tanstack/react-router";
+import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { YangonMap, type MapMarker } from "@/components/yangon-map";
 import { useTranslation } from "react-i18next";
+import { REPORT_CATEGORIES, getCategoryLabel } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/map")({
   head: () => ({ meta: [{ title: "Map — CivicLens AI" }] }),
   component: MapPage,
 });
+
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-warning/15 text-warning border-warning/30",
@@ -24,12 +34,15 @@ const STATUS_COLORS: Record<string, string> = {
 
 function MapPage() {
   const { t } = useTranslation();
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+
   const { data: reports = [] } = useQuery({
     queryKey: ["map-reports"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reports")
-        .select("id,title,status,category,latitude,longitude")
+        .select("id,title,status,category,latitude,longitude,department")
         .not("latitude", "is", null)
         .not("longitude", "is", null)
         .limit(500);
@@ -38,13 +51,19 @@ function MapPage() {
     },
   });
 
-  const markers: MapMarker[] = reports
+  const filtered = reports.filter((r) => {
+    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    if (categoryFilter !== "all" && r.category !== categoryFilter) return false;
+    return true;
+  });
+
+  const markers: MapMarker[] = filtered
     .filter((r) => r.latitude != null && r.longitude != null)
     .map((r) => ({
       id: r.id,
       lat: r.latitude as number,
       lng: r.longitude as number,
-      title: r.title,
+      title: `${r.title} · ${getCategoryLabel(r.category)}`,
       status: r.status ?? undefined,
       href: `/reports/${r.id}`,
     }));
@@ -75,11 +94,44 @@ function MapPage() {
         </div>
       </div>
 
+      <Card className="p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="h-8 w-[220px] text-sm">
+              <SelectValue placeholder="All categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {REPORT_CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 w-[160px] text-sm">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="analyzing">Analyzing</SelectItem>
+              <SelectItem value="verified">Verified</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="ml-auto font-mono text-[11px] uppercase text-muted-foreground">
+            Showing {markers.length} of {reports.length}
+          </span>
+        </div>
+      </Card>
+
       <Card className="overflow-hidden p-0">
         <ClientOnly fallback={<div className="grid h-[560px] place-items-center text-sm text-muted-foreground">Loading map…</div>}>
           <YangonMap markers={markers} height="560px" zoom={12} />
         </ClientOnly>
-
       </Card>
 
       <Card className="p-5">
@@ -87,7 +139,7 @@ function MapPage() {
           <MapPin className="h-4 w-4" /> Reports on map ({markers.length})
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {reports.slice(0, 24).map((r) => (
+          {filtered.slice(0, 24).map((r) => (
             <Link
               key={r.id}
               to="/reports/$id"
@@ -103,6 +155,9 @@ function MapPage() {
                   {r.status}
                 </Badge>
               </div>
+              <div className="mt-1 truncate text-[11px] text-muted-foreground">
+                {getCategoryLabel(r.category)}
+              </div>
             </Link>
           ))}
         </div>
@@ -110,3 +165,4 @@ function MapPage() {
     </div>
   );
 }
+
