@@ -3,7 +3,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Users, Search, Shield, ShieldCheck, User as UserIcon, Sparkles, Loader2, Mail } from "lucide-react";
+import { ArrowLeft, Users, Search, Shield, ShieldCheck, User as UserIcon, Sparkles, Loader2, Mail } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
