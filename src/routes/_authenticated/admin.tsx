@@ -73,6 +73,8 @@ function AdminPage() {
   const role = useAuthStore((s) => s.role);
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const escalateFn = useServerFn(runEscalation);
+  const [inspectId, setInspectId] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialized && role !== null && !isModerator) {
