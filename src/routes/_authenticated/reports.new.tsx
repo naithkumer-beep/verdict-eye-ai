@@ -82,6 +82,27 @@ function NewReport() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [locating, setLocating] = useState(false);
+
+  // Auto-capture live GPS location on mount
+  useEffect(() => {
+    if (!navigator.geolocation || coords) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords([pos.coords.latitude, pos.coords.longitude]);
+        setLocating(false);
+        toast.success("Live location captured");
+      },
+      () => {
+        setLocating(false);
+        // Silent — user can pin manually
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const updateStage = (key: string, status: StageStatus, detail?: string) => {
     setStages((prev) =>
