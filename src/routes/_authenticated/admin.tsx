@@ -80,7 +80,9 @@ function AdminPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const escalateFn = useServerFn(runEscalation);
+  const refreshFn = useServerFn(refreshAdminPredictions);
   const [inspectId, setInspectId] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (initialized && role !== null && !isModerator) {
@@ -88,7 +90,7 @@ function AdminPage() {
     }
   }, [initialized, role, isModerator, navigate]);
 
-  // Realtime updates for the operations queue
+  // Realtime updates for the operations queue + command-center widgets
   useEffect(() => {
     if (!isModerator) return;
     const ch = supabase
@@ -96,9 +98,13 @@ function AdminPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "reports" }, () => {
         qc.invalidateQueries({ queryKey: ["admin-reports"] });
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "ai_predictions" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin-prediction"] });
+      })
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
   }, [isModerator, qc]);
+
 
   const { data: reports = [] } = useQuery({
     queryKey: ["admin-reports"],
