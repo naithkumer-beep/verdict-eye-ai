@@ -83,6 +83,48 @@ function RewardsPage() {
   const submitted = events.filter((e) => e.kind === "report_created").length;
   const resolved = events.filter((e) => e.kind === "report_resolved").length;
 
+  // Filters
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [kind, setKind] = useState<string>("all");
+  const [reportId, setReportId] = useState("");
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((e) => {
+      if (kind !== "all" && e.kind !== kind) return false;
+      if (reportId.trim() && !(e.report_id ?? "").toLowerCase().includes(reportId.trim().toLowerCase())) return false;
+      const t = new Date(e.created_at).getTime();
+      if (fromDate && t < new Date(fromDate).getTime()) return false;
+      if (toDate && t > new Date(toDate).getTime() + 86_399_999) return false;
+      return true;
+    });
+  }, [events, kind, reportId, fromDate, toDate]);
+
+  const hasFilters = !!(fromDate || toDate || reportId || kind !== "all");
+  const clearFilters = () => { setFromDate(""); setToDate(""); setKind("all"); setReportId(""); };
+
+  const exportCsv = () => {
+    const rows = [
+      ["created_at", "kind", "points", "report_id", "reason"],
+      ...filteredEvents.map((e) => [
+        new Date(e.created_at).toISOString(),
+        e.kind,
+        String(e.points),
+        e.report_id ?? "",
+        (KIND_META[e.kind]?.reason ?? "Reward earned.").replace(/"/g, '""'),
+      ]),
+    ];
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `reward-history-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+
   return (
     <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div>
