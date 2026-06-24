@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { YangonMap, type MapMarker } from "@/components/yangon-map";
 import { useTranslation } from "react-i18next";
 import { REPORT_CATEGORIES, getCategoryLabel } from "@/lib/categories";
+import { localNum } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/map")({
   head: () => ({ meta: [{ title: "Map — CivicLens AI" }] }),
