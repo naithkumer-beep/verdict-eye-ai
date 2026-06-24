@@ -50,7 +50,7 @@ function AuthPage() {
 
   useEffect(() => {
     if (initialized && user) {
-      navigate({ to: search.redirect ?? "/dashboard", replace: true });
+      navigate({ to: search.redirect ?? "/reports", replace: true });
     }
   }, [user, initialized, navigate, search.redirect]);
 
@@ -89,7 +89,7 @@ function AuthPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/reports`,
           data: { full_name: name || email.split("@")[0] },
         },
       });
@@ -106,7 +106,7 @@ function AuthPage() {
         toast.error(error.message);
       } else {
         toast.success("Welcome back");
-        navigate({ to: search.redirect ?? "/dashboard", replace: true });
+        navigate({ to: search.redirect ?? "/reports", replace: true });
       }
     }
   };
@@ -122,7 +122,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: search.redirect ?? "/dashboard", replace: true });
+    navigate({ to: search.redirect ?? "/reports", replace: true });
   };
 
   return (

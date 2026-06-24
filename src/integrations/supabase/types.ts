@@ -430,6 +430,32 @@ export type Database = {
           },
         ]
       }
+      report_resolved_emails: {
+        Row: {
+          report_id: string
+          sent_at: string
+          sent_by: string | null
+        }
+        Insert: {
+          report_id: string
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Update: {
+          report_id?: string
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_resolved_emails_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           affected_population: number | null
