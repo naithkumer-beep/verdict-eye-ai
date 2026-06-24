@@ -31,12 +31,14 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { useServerFn } from "@tanstack/react-start";
-import { REPORT_CATEGORIES, type CategoryValue } from "@/lib/categories";
+import { REPORT_CATEGORIES, type CategoryValue, CATEGORY_TO_DEPARTMENT } from "@/lib/categories";
 import { technicalValidate, computePerceptualHash } from "@/lib/image-utils";
 import { validateReportImage, type ValidationResult } from "@/lib/ai-validation.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { localNum } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
+
 
 export const Route = createFileRoute("/_authenticated/reports/new")({
   head: () => ({ meta: [{ title: "New report — CIAP" }] }),
@@ -72,8 +74,9 @@ function NewReport() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<CategoryValue>("road_damage");
-  const [department, setDepartment] = useState("");
+  const [department, setDepartment] = useState<string>("auto");
   const [location, setLocation] = useState("");
+
   const [coords, setCoords] = useState<[number, number] | null>(null);
 
 
