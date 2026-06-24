@@ -18,18 +18,19 @@ import { useAuthStore } from "@/lib/auth-store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CIAP — AI Change Impact Analysis Platform" },
+      { title: "CivicLens AI — Yangon Civic Reporting" },
       {
         name: "description",
         content:
-          "Six-stage AI validation pipeline that rejects irrelevant, duplicate, low-quality, and low-confidence images before analysis. Built for civic issue reporting.",
+          "Report civic issues across Yangon — road damage, garbage, broken street lights, drainage. Bilingual (English / မြန်မာ) with a 6-stage AI validation pipeline.",
       },
-      { property: "og:title", content: "CIAP — Trustworthy AI Impact Analysis" },
+      { property: "og:title", content: "CivicLens AI — built for Yangon" },
       {
         property: "og:description",
         content:
-          "Multi-stage validation: technical checks, quality scoring, relevance detection, duplicate detection, AI cross-validation, confidence thresholds.",
+          "Live city map, comments, reactions, real-time admin updates, emergency hotlines, and bilingual UI for Yangon residents.",
       },
+
     ],
   }),
   component: LandingPage,
