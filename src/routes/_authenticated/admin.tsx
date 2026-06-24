@@ -427,6 +427,96 @@ function AdminPage() {
           )}
         </div>
       </Card>
+
+      <PredictionInspector reportId={inspectId} onClose={() => setInspectId(null)} />
     </div>
   );
 }
+
+function PredictionInspector({ reportId, onClose }: { reportId: string | null; onClose: () => void }) {
+  const { data: report } = useQuery({
+    queryKey: ["admin-report-detail", reportId],
+    queryFn: async () => {
+      if (!reportId) return null;
+      const { data } = await supabase.from("reports").select("*").eq("id", reportId).maybeSingle();
+      return data;
+    },
+    enabled: !!reportId,
+  });
+
+  if (!reportId) return null;
+  const r: any = report ?? {};
+  const actions: string[] = Array.isArray(r.recommended_actions) ? r.recommended_actions : [];
+
+  return (
+    <Dialog open={!!reportId} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{r.title ?? "Report"}</DialogTitle>
+          <DialogDescription>AI prediction inputs, confidence scores, and generated payload.</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <ScoreBox label="Confidence" value={r.confidence_score ?? 0} />
+            <ScoreBox label="Relevance" value={r.relevance_score ?? 0} />
+            <ScoreBox label="Quality" value={r.quality_score ?? 0} />
+            <ScoreBox label="Impact" value={r.impact_score ?? 0} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <Field label="Category" value={r.category} />
+            <Field label="Status" value={r.status} />
+            <Field label="Priority" value={r.priority ?? "—"} />
+            <Field label="Severity" value={r.severity ?? "—"} />
+            <Field label="Affected population" value={(r.affected_population ?? 0).toLocaleString()} />
+            <Field label="Risk level" value={r.risk_level ?? "—"} />
+          </div>
+
+          {r.ai_summary && (
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">AI summary</div>
+              <p className="mt-1 text-sm">{r.ai_summary}</p>
+            </div>
+          )}
+
+          {actions.length > 0 && (
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Recommended actions</div>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+                {actions.map((a, i) => <li key={i}>{a}</li>)}
+              </ul>
+            </div>
+          )}
+
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Raw AI payload</div>
+            <pre className="mt-1 max-h-64 overflow-auto rounded-md border border-border bg-secondary/40 p-3 text-[11px] leading-relaxed">
+{JSON.stringify(r.ai_analysis ?? { note: "No AI analysis stored" }, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ScoreBox({ label, value }: { label: string; value: number }) {
+  const color = value >= 85 ? "text-success" : value >= 70 ? "text-accent" : "text-warning";
+  return (
+    <div className="rounded-md border border-border p-2">
+      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`mt-0.5 text-lg font-semibold tabular-nums ${color}`}>{value}<span className="text-xs text-muted-foreground">%</span></div>
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: any }) {
+  return (
+    <div className="rounded-md border border-border p-2">
+      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-0.5 truncate font-medium">{String(value)}</div>
+    </div>
+  );
+}
+
