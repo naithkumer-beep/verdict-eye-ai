@@ -29,7 +29,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthStore, useIsModerator } from "@/lib/auth-store";
+import { useAuthStore, useIsAdmin, useIsModerator } from "@/lib/auth-store";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDistanceToNow, subDays, startOfDay, format } from "date-fns";
 
@@ -42,6 +42,7 @@ function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const role = useAuthStore((s) => s.role);
   const initialized = useAuthStore((s) => s.initialized);
+  const isAdmin = useIsAdmin();
   const isModerator = useIsModerator();
   const navigate = useNavigate();
 
@@ -148,9 +149,11 @@ function DashboardPage() {
             </div>
           </div>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/reports/new">Earn more <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
-        </Button>
+        {!isAdmin && (
+          <Button asChild variant="outline" size="sm">
+            <Link to="/reports/new">Earn more <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+          </Button>
+        )}
       </Card>
 
       {/* Stat tiles */}
