@@ -38,6 +38,9 @@ interface UserRow {
   avatar_url: string | null;
   created_at: string;
   role: Role;
+  points: number;
+  reports_total: number;
+  reports_resolved: number;
 }
 
 interface Suggestion {
