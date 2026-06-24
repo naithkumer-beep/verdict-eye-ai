@@ -221,7 +221,20 @@ function RewardsPage() {
             {filteredEvents.length}{hasFilters ? ` of ${events.length}` : ""} events
           </Badge>
         </div>
-        {filteredEvents.length === 0 ? (
+        {eventsLoading ? (
+          <div className="divide-y divide-border">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3">
+                <Skeleton className="h-9 w-9 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-1/3" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+                <Skeleton className="h-6 w-12" />
+              </div>
+            ))}
+          </div>
+        ) : filteredEvents.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Trophy className="mx-auto mb-3 h-6 w-6" />
             {events.length === 0 ? "No rewards yet. Submit your first report to earn 10 points." : "No events match the current filters."}
