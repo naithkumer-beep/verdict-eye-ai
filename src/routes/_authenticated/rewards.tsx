@@ -1,11 +1,14 @@
 // Reward History — points balance + full reward_events ledger with real-time updates.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { Trophy, Sparkles, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Trophy, Sparkles, CheckCircle2, ArrowUpRight, Download, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { format, formatDistanceToNow } from "date-fns";
