@@ -1,18 +1,28 @@
-// Map view of all reports across Yangon.
+// Map view of all reports across Yangon, filterable by status and category.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ClientOnly } from "@tanstack/react-router";
+import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { YangonMap, type MapMarker } from "@/components/yangon-map";
 import { useTranslation } from "react-i18next";
+import { REPORT_CATEGORIES, getCategoryLabel } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/map")({
   head: () => ({ meta: [{ title: "Map — CivicLens AI" }] }),
   component: MapPage,
 });
+
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-warning/15 text-warning border-warning/30",
