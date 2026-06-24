@@ -11,6 +11,7 @@ import {
   Activity,
   AlertTriangle,
   ArrowUpRight,
+  Trophy,
 } from "lucide-react";
 import {
   Area,
@@ -51,6 +52,21 @@ function DashboardPage() {
     },
     enabled: !!user,
   });
+
+  const { data: rewardProfile } = useQuery({
+    queryKey: ["reward-profile", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("points")
+        .eq("id", user.id)
+        .maybeSingle();
+      return data as { points: number | null } | null;
+    },
+    enabled: !!user,
+  });
+  const points = rewardProfile?.points ?? 0;
 
   const stats = {
     total: reports?.length ?? 0,
