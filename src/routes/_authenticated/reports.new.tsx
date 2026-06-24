@@ -1,5 +1,7 @@
 // New Report — runs the full 6-stage AI validation pipeline live.
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, ClientOnly } from "@tanstack/react-router";
+import { YangonMap } from "@/components/yangon-map";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
