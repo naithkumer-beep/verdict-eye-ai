@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { YangonMap, type MapMarker } from "@/components/yangon-map";
 import { useTranslation } from "react-i18next";
 import { REPORT_CATEGORIES, getCategoryLabel } from "@/lib/categories";
+import { localNum } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/map")({
   head: () => ({ meta: [{ title: "Map — CivicLens AI" }] }),
@@ -133,7 +134,7 @@ function MapPage() {
             </SelectContent>
           </Select>
           <span className="ml-auto font-mono text-[11px] uppercase text-muted-foreground">
-            Showing {markers.length} of {reports.length}
+            Showing {localNum(markers.length)} of {localNum(reports.length)}
           </span>
         </div>
       </Card>
@@ -146,7 +147,7 @@ function MapPage() {
 
       <Card className="p-5">
         <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-          <MapPin className="h-4 w-4" /> Reports on map ({markers.length})
+          <MapPin className="h-4 w-4" /> Reports on map ({localNum(markers.length)})
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.slice(0, 24).map((r) => (

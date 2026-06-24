@@ -36,6 +36,7 @@ import { technicalValidate, computePerceptualHash } from "@/lib/image-utils";
 import { validateReportImage, type ValidationResult } from "@/lib/ai-validation.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { localNum } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/reports/new")({
   head: () => ({ meta: [{ title: "New report — CIAP" }] }),
@@ -436,7 +437,7 @@ function NewReport() {
                 />
               </ClientOnly>
               <p className="text-[11px] text-muted-foreground">
-                We auto-capture your live GPS. You can also click anywhere on the map to drop a pin{coords && ` · ${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`}
+                We auto-capture your live GPS. You can also click anywhere on the map to drop a pin{coords && ` · ${localNum(coords[0].toFixed(5))}, ${localNum(coords[1].toFixed(5))}`}
               </p>
             </div>
 
@@ -445,37 +446,60 @@ function NewReport() {
 
           <div>
             <Label>Evidence image</Label>
-            <label className="mt-1.5 block cursor-pointer">
-              <div
-                className={cn(
-                  "relative grid place-items-center rounded-lg border-2 border-dashed border-border bg-secondary/30 px-4 py-8 transition-colors hover:border-accent/50",
-                  previewUrl && "border-solid p-0",
-                )}
-              >
-                {previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="max-h-72 w-full rounded-lg object-contain"
-                  />
-                ) : (
-                  <div className="text-center">
-                    <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
-                    <div className="mt-2 text-sm font-medium">Click to upload</div>
-                    <div className="text-xs text-muted-foreground">
-                      JPEG, PNG, WebP • up to 8 MB • min 480×480
+            <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
+              <label className="block cursor-pointer">
+                <div
+                  className={cn(
+                    "relative grid place-items-center rounded-lg border-2 border-dashed border-border bg-secondary/30 px-4 py-8 transition-colors hover:border-accent/50",
+                    previewUrl && "border-solid p-0 sm:col-span-2",
+                  )}
+                >
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="max-h-72 w-full rounded-lg object-contain"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
+                      <div className="mt-2 text-sm font-medium">Upload from device</div>
+                      <div className="text-xs text-muted-foreground">
+                        JPEG, PNG, WebP • up to 8 MB
+                      </div>
                     </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                  />
+                </div>
+              </label>
+              {!previewUrl && (
+                <label className="block cursor-pointer">
+                  <div className="relative grid place-items-center rounded-lg border-2 border-dashed border-border bg-secondary/30 px-4 py-8 transition-colors hover:border-accent/50">
+                    <div className="text-center">
+                      <ImageIcon className="mx-auto h-6 w-6 text-muted-foreground" />
+                      <div className="mt-2 text-sm font-medium">Take a photo</div>
+                      <div className="text-xs text-muted-foreground">
+                        Use your camera (mobile)
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="sr-only"
+                      onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                    />
                   </div>
-                )}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="sr-only"
-                  onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-                />
-              </div>
-            </label>
+                </label>
+              )}
+            </div>
           </div>
+
 
           <Button
             onClick={runPipeline}
@@ -503,7 +527,7 @@ function NewReport() {
             <div>
               <div className="text-sm font-medium">Validation pipeline</div>
               <div className="text-xs text-muted-foreground">
-                {completed}/{stages.length} stages cleared
+                {localNum(completed)}/{localNum(stages.length)} stages cleared
               </div>
             </div>
             <ShieldCheck className="h-4 w-4 text-accent" />

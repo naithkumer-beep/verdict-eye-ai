@@ -11,7 +11,6 @@ export interface TechnicalCheck {
 
 const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB
-const MIN_DIM = 480;
 const MAX_DIM = 8000;
 
 export async function technicalValidate(file: File): Promise<TechnicalCheck> {
@@ -41,12 +40,6 @@ export async function technicalValidate(file: File): Promise<TechnicalCheck> {
   });
 
   if (!dims) return { ok: false, reason: "Image is corrupted or unreadable." };
-  if (dims.w < MIN_DIM || dims.h < MIN_DIM) {
-    return {
-      ok: false,
-      reason: `Resolution too low (${dims.w}×${dims.h}). Need at least ${MIN_DIM}×${MIN_DIM}.`,
-    };
-  }
   if (dims.w > MAX_DIM || dims.h > MAX_DIM) {
     return { ok: false, reason: "Image dimensions exceed maximum." };
   }
