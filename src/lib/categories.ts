@@ -62,3 +62,24 @@ export const CATEGORY_MAP = Object.fromEntries(
 export function getCategoryLabel(value: string): string {
   return CATEGORY_MAP[value as CategoryValue]?.label ?? value;
 }
+
+// Smart auto-assignment: maps a report category to the most likely
+// department code. Admins can always override in the operations drawer.
+export const CATEGORY_TO_DEPARTMENT: Record<CategoryValue, string> = {
+  road_damage: "roads",
+  garbage: "sanitation",
+  street_light: "electricity",
+  water_drainage: "water",
+  public_safety: "safety",
+  vandalism: "sanitation",
+  building_hazard: "safety",
+};
+
+export const PRIORITIES = [
+  { value: "critical", label: "Critical", sla: "24 hours" },
+  { value: "high", label: "High", sla: "3 days" },
+  { value: "medium", label: "Medium", sla: "7 days" },
+  { value: "low", label: "Low", sla: "14 days" },
+] as const;
+export type PriorityValue = (typeof PRIORITIES)[number]["value"];
+

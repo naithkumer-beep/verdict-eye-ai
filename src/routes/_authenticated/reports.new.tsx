@@ -31,12 +31,14 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { useServerFn } from "@tanstack/react-start";
-import { REPORT_CATEGORIES, type CategoryValue } from "@/lib/categories";
+import { REPORT_CATEGORIES, type CategoryValue, CATEGORY_TO_DEPARTMENT } from "@/lib/categories";
 import { technicalValidate, computePerceptualHash } from "@/lib/image-utils";
 import { validateReportImage, type ValidationResult } from "@/lib/ai-validation.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { localNum } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
+
 
 export const Route = createFileRoute("/_authenticated/reports/new")({
   head: () => ({ meta: [{ title: "New report — CIAP" }] }),
@@ -72,8 +74,9 @@ function NewReport() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<CategoryValue>("road_damage");
-  const [department, setDepartment] = useState("");
+  const [department, setDepartment] = useState<string>("auto");
   const [location, setLocation] = useState("");
+
   const [coords, setCoords] = useState<[number, number] | null>(null);
 
 
@@ -84,6 +87,23 @@ function NewReport() {
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [locating, setLocating] = useState(false);
+
+  // Department catalogue from DB. Auto-suggestion happens when value="auto".
+  const { data: departments = [] } = useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("departments")
+        .select("id,code,name_en,name_my")
+        .order("name_en");
+      return (data ?? []) as Array<{ id: string; code: string; name_en: string; name_my: string }>;
+    },
+    staleTime: 5 * 60_000,
+  });
+  const resolvedDeptCode =
+    department === "auto" ? CATEGORY_TO_DEPARTMENT[category] : department;
+  const resolvedDept = departments.find((d) => d.code === resolvedDeptCode);
+
 
   // Auto-capture live GPS location on mount, with Yangon fallback
   useEffect(() => {
@@ -235,7 +255,9 @@ function NewReport() {
             title: title.trim(),
             description: description.trim(),
             category,
-            department: department.trim() || null,
+            department: resolvedDept?.name_en ?? null,
+            department_id: resolvedDept?.id ?? null,
+
             location: location.trim() || null,
             latitude: coords?.[0] ?? null,
             longitude: coords?.[1] ?? null,
@@ -359,15 +381,27 @@ function NewReport() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="dept">Department (optional)</Label>
-              <Input
-                id="dept"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                placeholder="Public Works"
-                maxLength={80}
-              />
+              <Label htmlFor="dept">Department</Label>
+              <Select value={department} onValueChange={setDepartment}>
+                <SelectTrigger id="dept">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">
+                    Auto · {resolvedDept?.name_en ?? "—"}
+                  </SelectItem>
+                  {departments.map((d) => (
+                    <SelectItem key={d.code} value={d.code}>
+                      {d.name_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                Auto-routes by category. Admins can override on review.
+              </p>
             </div>
+
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="loc">Location (Yangon street / township)</Label>
               <Input
