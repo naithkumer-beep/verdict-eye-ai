@@ -1,6 +1,7 @@
-// Dashboard — analytics overview.
-import { createFileRoute } from "@tanstack/react-router";
+// Dashboard — analytics overview (admins & moderators only).
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   FileText,
