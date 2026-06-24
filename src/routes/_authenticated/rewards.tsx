@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { format, formatDistanceToNow } from "date-fns";
@@ -37,7 +38,7 @@ function RewardsPage() {
   const user = useAuthStore((s) => s.user);
   const qc = useQueryClient();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["rewards-profile", user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -47,7 +48,7 @@ function RewardsPage() {
     enabled: !!user,
   });
 
-  const { data: events = [] } = useQuery({
+  const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ["reward-events", user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -136,33 +137,43 @@ function RewardsPage() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="border-accent/30 bg-gradient-to-br from-accent/10 via-card to-card p-5">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/15 text-accent">
-              <Trophy className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                Total points
+        {profileLoading ? (
+          <>
+            <Card className="p-5"><Skeleton className="h-12 w-full" /></Card>
+            <Card className="p-5"><Skeleton className="h-12 w-full" /></Card>
+            <Card className="p-5"><Skeleton className="h-12 w-full" /></Card>
+          </>
+        ) : (
+          <>
+            <Card className="border-accent/30 bg-gradient-to-br from-accent/10 via-card to-card p-5">
+              <div className="flex items-center gap-3">
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/15 text-accent">
+                  <Trophy className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Total points
+                  </div>
+                  <div className="text-3xl font-semibold tracking-tight">{total}</div>
+                </div>
               </div>
-              <div className="text-3xl font-semibold tracking-tight">{total}</div>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-5">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            Reports submitted
-          </div>
-          <div className="mt-1 text-2xl font-semibold">{submitted}</div>
-          <div className="text-xs text-muted-foreground">+{submitted * 10} pts earned</div>
-        </Card>
-        <Card className="p-5">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            Reports resolved
-          </div>
-          <div className="mt-1 text-2xl font-semibold">{resolved}</div>
-          <div className="text-xs text-muted-foreground">+{resolved * 50} pts earned</div>
-        </Card>
+            </Card>
+            <Card className="p-5">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Reports submitted
+              </div>
+              <div className="mt-1 text-2xl font-semibold">{submitted}</div>
+              <div className="text-xs text-muted-foreground">+{submitted * 10} pts earned</div>
+            </Card>
+            <Card className="p-5">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Reports resolved
+              </div>
+              <div className="mt-1 text-2xl font-semibold">{resolved}</div>
+              <div className="text-xs text-muted-foreground">+{resolved * 50} pts earned</div>
+            </Card>
+          </>
+        )}
       </div>
 
       <Card className="p-4">
@@ -210,7 +221,20 @@ function RewardsPage() {
             {filteredEvents.length}{hasFilters ? ` of ${events.length}` : ""} events
           </Badge>
         </div>
-        {filteredEvents.length === 0 ? (
+        {eventsLoading ? (
+          <div className="divide-y divide-border">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3">
+                <Skeleton className="h-9 w-9 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-1/3" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+                <Skeleton className="h-6 w-12" />
+              </div>
+            ))}
+          </div>
+        ) : filteredEvents.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Trophy className="mx-auto mb-3 h-6 w-6" />
             {events.length === 0 ? "No rewards yet. Submit your first report to earn 10 points." : "No events match the current filters."}
