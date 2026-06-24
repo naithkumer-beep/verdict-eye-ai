@@ -90,19 +90,34 @@ export function AppShell({ children }: { children: ReactNode }) {
         })}
 
         {isModerator && (
-          <Link
-            to="/admin"
-            onClick={() => setOpen(false)}
-            className={cn(
-              "mt-2 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
-              location.pathname.startsWith("/admin")
-                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            )}
-          >
-            <ShieldCheck className="h-4 w-4" />
-            {t("nav.admin")}
-          </Link>
+          <>
+            <Link
+              to="/admin"
+              onClick={() => setOpen(false)}
+              className={cn(
+                "mt-2 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                location.pathname === "/admin"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <ShieldCheck className="h-4 w-4" />
+              {t("nav.admin")}
+            </Link>
+            <Link
+              to="/admin/command"
+              onClick={() => setOpen(false)}
+              className={cn(
+                "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                location.pathname.startsWith("/admin/command")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <ShieldCheck className="h-4 w-4" />
+              {t("nav.commandCenter", "Command Center")}
+            </Link>
+          </>
         )}
       </nav>
 
