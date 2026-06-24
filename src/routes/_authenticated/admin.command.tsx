@@ -2,7 +2,7 @@
 // hotspot heatmap, AI predictions, manual escalation trigger.
 import { createFileRoute, ClientOnly, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,14 +23,35 @@ export const Route = createFileRoute("/_authenticated/admin/command")({
 function CommandCenter() {
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
+  const role = useAuthStore((s) => s.role);
   const navigate = useNavigate();
   const qc = useQueryClient();
   const refreshFn = useServerFn(refreshAdminPredictions);
   const escalateFn = useServerFn(runEscalation);
 
   useEffect(() => {
-    if (initialized && !isAdmin) navigate({ to: "/dashboard", replace: true });
-  }, [initialized, isAdmin, navigate]);
+    if (initialized && role !== null && !isAdmin) navigate({ to: "/dashboard", replace: true });
+  }, [initialized, role, isAdmin, navigate]);
+
+  // Realtime: live KPI / map / insights updates
+  useEffect(() => {
+    if (!isAdmin) return;
+    const ch = supabase
+      .channel("cc-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "reports" }, () => {
+        qc.invalidateQueries({ queryKey: ["cc-reports"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "ai_predictions" }, () => {
+        qc.invalidateQueries({ queryKey: ["cc-prediction"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "report_feedback" }, () => {
+        qc.invalidateQueries({ queryKey: ["cc-reports"] });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [isAdmin, qc]);
+
+  const [selectedReport, setSelectedReport] = useState<any | null>(null);
 
   const { data: reports = [] } = useQuery({
     queryKey: ["cc-reports"],
