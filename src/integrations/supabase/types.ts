@@ -631,6 +631,7 @@ export type Database = {
         Returns: number
       }
       escalate_overdue_reports: { Args: never; Returns: number }
+      get_profile_email: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
