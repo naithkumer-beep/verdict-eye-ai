@@ -75,9 +75,9 @@ function AdminPage() {
       await supabase.from("audit_logs").insert({
         user_id: uid,
         action: "report.status_change",
-        resource_type: "report",
-        resource_id: id,
-        metadata: { title: prev?.title, from: prev?.status, to: status } as never,
+        entity_type: "report",
+        entity_id: id,
+        details: { title: prev?.title, from: prev?.status, to: status },
       });
     }
     toast.success(`Status updated to ${status}`);
