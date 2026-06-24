@@ -96,9 +96,9 @@ function AdminPage() {
       await supabase.from("audit_logs").insert({
         user_id: uid,
         action: "report.delete",
-        resource_type: "report",
-        resource_id: id,
-        metadata: { title } as never,
+        entity_type: "report",
+        entity_id: id,
+        details: { title },
       });
     }
     toast.success("Report deleted");
