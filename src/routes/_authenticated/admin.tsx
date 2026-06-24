@@ -155,9 +155,24 @@ function AdminPage() {
     toast.success(`Status → ${status}`);
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
 
-    // Email the reporter when their report is resolved
+    // Email the reporter when their report is resolved — idempotent via report_resolved_emails
     if (status === "resolved" && prev?.status !== "resolved" && prev?.user_id) {
       try {
+        const uid = (await supabase.auth.getUser()).data.user?.id;
+        // Try to claim the send slot. Returns the inserted row only on first call.
+        const { data: claim } = await (supabase as any)
+          .from("report_resolved_emails")
+          .upsert(
+            { report_id: id, sent_by: uid },
+            { onConflict: "report_id", ignoreDuplicates: true },
+          )
+          .select("report_id");
+        const isFirstSend = Array.isArray(claim) && claim.length > 0;
+        if (!isFirstSend) {
+          console.info("Resolved email already sent for", id, "— skipping");
+          return;
+        }
+
         const [{ data: emailRow }, { data: profile }] = await Promise.all([
           (supabase as any).rpc("get_profile_email", { _user_id: prev.user_id }),
           supabase.from("profiles").select("display_name,points").eq("id", prev.user_id).maybeSingle(),
