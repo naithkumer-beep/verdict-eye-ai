@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { ReportComments } from "@/components/report-comments";
 import { ReportReactions } from "@/components/report-reactions";
 import { YangonMap } from "@/components/yangon-map";
+import { FeedbackModal } from "@/components/feedback-modal";
 import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/reports/$id")({
@@ -261,6 +262,8 @@ function ReportDetail() {
 
       {/* Comments */}
       <ReportComments reportId={report.id} />
+
+      <FeedbackModal reportId={report.id} ownerId={report.user_id} status={report.status} />
     </div>
   );
 }
