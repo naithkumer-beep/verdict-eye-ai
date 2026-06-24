@@ -1,9 +1,10 @@
-// Admin panel — moderators/admins. Admins can change status, assign
-// priority/department, and delete reports. Trigger autosets deadline +
-// work-order number based on priority/status changes.
+// Admin Panel — operational/management hub for moderators & admins.
+// Owns CRUD-style actions on reports (status/priority/department/delete),
+// per-report AI inspector, escalation trigger, plus links to user
+// management, audit log, and the read-only Command Center.
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ShieldCheck,
   Trash2,
@@ -13,6 +14,10 @@ import {
   Flag,
   Clock,
   AlertCircle,
+  Zap,
+  Eye,
+  Gauge,
+  Sparkles,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +29,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { useServerFn } from "@tanstack/react-start";
+import { runEscalation } from "@/lib/admin-ai.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin, useIsModerator } from "@/lib/auth-store";
 import { getCategoryLabel, PRIORITIES, type PriorityValue } from "@/lib/categories";
@@ -31,7 +45,7 @@ import { formatDistanceToNow, isPast } from "date-fns";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({ meta: [{ title: "Admin — CivicLens AI" }] }),
+  head: () => ({ meta: [{ title: "Admin Panel — CivicLens AI" }] }),
   component: AdminPage,
 });
 
