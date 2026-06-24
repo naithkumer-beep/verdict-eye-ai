@@ -63,6 +63,22 @@ function RewardsPage() {
     enabled: !!user,
   });
 
+  // Map of report_id -> report_code so users can filter/display by short code
+  const { data: reportCodeMap = {} } = useQuery({
+    queryKey: ["my-report-codes", user?.id],
+    queryFn: async () => {
+      if (!user) return {} as Record<string, string>;
+      const { data } = await supabase
+        .from("reports")
+        .select("id,report_code")
+        .eq("user_id", user.id);
+      const map: Record<string, string> = {};
+      for (const r of data ?? []) if ((r as any).report_code) map[r.id] = (r as any).report_code;
+      return map;
+    },
+    enabled: !!user,
+  });
+
   // Real-time updates whenever new points are awarded
   useEffect(() => {
     if (!user) return;
@@ -93,7 +109,12 @@ function RewardsPage() {
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
       if (kind !== "all" && e.kind !== kind) return false;
-      if (reportId.trim() && !(e.report_id ?? "").toLowerCase().includes(reportId.trim().toLowerCase())) return false;
+      if (reportId.trim()) {
+        const q = reportId.trim().toLowerCase();
+        const rid = (e.report_id ?? "").toLowerCase();
+        const code = (reportCodeMap[e.report_id ?? ""] ?? "").toLowerCase();
+        if (!rid.includes(q) && !code.includes(q)) return false;
+      }
       const t = new Date(e.created_at).getTime();
       if (fromDate && t < new Date(fromDate).getTime()) return false;
       if (toDate && t > new Date(toDate).getTime() + 86_399_999) return false;
@@ -199,7 +220,7 @@ function RewardsPage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="rw-rid" className="text-xs">Report ID</Label>
-            <Input id="rw-rid" placeholder="Filter by report id" value={reportId} onChange={(e) => setReportId(e.target.value)} />
+            <Input id="rw-rid" placeholder="e.g. RPT-000001" value={reportId} onChange={(e) => setReportId(e.target.value)} />
           </div>
           <div className="flex gap-2">
             {hasFilters && (
@@ -265,7 +286,12 @@ function RewardsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">{meta.label}</div>
-                    <div className="truncate text-xs text-muted-foreground">{meta.reason}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {meta.reason}
+                      {e.report_id && reportCodeMap[e.report_id] && (
+                        <span className="ml-1 font-mono text-[10px] uppercase text-foreground/70">· {reportCodeMap[e.report_id]}</span>
+                      )}
+                    </div>
                     <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                       {format(new Date(e.created_at), "MMM d, yyyy · HH:mm")} ·{" "}
                       {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}

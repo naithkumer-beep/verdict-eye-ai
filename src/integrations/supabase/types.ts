@@ -479,6 +479,7 @@ export type Database = {
           quality_score: number | null
           recommended_actions: Json | null
           relevance_score: number | null
+          report_code: string | null
           resolved_at: string | null
           risk_level: string | null
           severity: Database["public"]["Enums"]["severity_level"] | null
@@ -511,6 +512,7 @@ export type Database = {
           quality_score?: number | null
           recommended_actions?: Json | null
           relevance_score?: number | null
+          report_code?: string | null
           resolved_at?: string | null
           risk_level?: string | null
           severity?: Database["public"]["Enums"]["severity_level"] | null
@@ -543,6 +545,7 @@ export type Database = {
           quality_score?: number | null
           recommended_actions?: Json | null
           relevance_score?: number | null
+          report_code?: string | null
           resolved_at?: string | null
           risk_level?: string | null
           severity?: Database["public"]["Enums"]["severity_level"] | null
