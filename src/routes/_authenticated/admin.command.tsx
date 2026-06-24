@@ -2,11 +2,12 @@
 // hotspot heatmap, AI predictions, manual escalation trigger.
 import { createFileRoute, ClientOnly, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, AlertTriangle, Clock, DollarSign, Sparkles, Zap, ArrowLeft, RefreshCw } from "lucide-react";
+import { Activity, AlertTriangle, Clock, DollarSign, Sparkles, Zap, ArrowLeft, RefreshCw, Eye, Radio } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin } from "@/lib/auth-store";
 import { useServerFn } from "@tanstack/react-start";
@@ -23,14 +24,35 @@ export const Route = createFileRoute("/_authenticated/admin/command")({
 function CommandCenter() {
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
+  const role = useAuthStore((s) => s.role);
   const navigate = useNavigate();
   const qc = useQueryClient();
   const refreshFn = useServerFn(refreshAdminPredictions);
   const escalateFn = useServerFn(runEscalation);
 
   useEffect(() => {
-    if (initialized && !isAdmin) navigate({ to: "/dashboard", replace: true });
-  }, [initialized, isAdmin, navigate]);
+    if (initialized && role !== null && !isAdmin) navigate({ to: "/dashboard", replace: true });
+  }, [initialized, role, isAdmin, navigate]);
+
+  // Realtime: live KPI / map / insights updates
+  useEffect(() => {
+    if (!isAdmin) return;
+    const ch = supabase
+      .channel("cc-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "reports" }, () => {
+        qc.invalidateQueries({ queryKey: ["cc-reports"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "ai_predictions" }, () => {
+        qc.invalidateQueries({ queryKey: ["cc-prediction"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "report_feedback" }, () => {
+        qc.invalidateQueries({ queryKey: ["cc-reports"] });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [isAdmin, qc]);
+
+  const [selectedReport, setSelectedReport] = useState<any | null>(null);
 
   const { data: reports = [] } = useQuery({
     queryKey: ["cc-reports"],
@@ -210,6 +232,124 @@ function CommandCenter() {
           <YangonMap markers={markers} height="400px" />
         </ClientOnly>
       </Card>
+
+      <Card className="p-0">
+        <div className="flex items-center justify-between border-b border-border p-4">
+          <div>
+            <h2 className="text-sm font-medium">AI prediction inspector</h2>
+            <p className="text-xs text-muted-foreground">Click a report to see inputs, confidence scores, and generated AI payload.</p>
+          </div>
+          <Badge variant="outline" className="font-mono text-[10px] uppercase">
+            <Radio className="mr-1 h-3 w-3 animate-pulse text-success" /> Live
+          </Badge>
+        </div>
+        <div className="max-h-[420px] divide-y divide-border overflow-y-auto">
+          {reports.slice(0, 50).map((r: any) => (
+            <button
+              key={r.id}
+              onClick={() => setSelectedReport(r)}
+              className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-secondary/50"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">{r.title}</div>
+                <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {r.category} · {r.status}{r.priority ? ` · ${r.priority}` : ""}
+                </div>
+              </div>
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <PredictionDetailModal reportId={selectedReport?.id ?? null} onOpenChange={(o) => !o && setSelectedReport(null)} />
+    </div>
+  );
+}
+
+function PredictionDetailModal({ reportId, onOpenChange }: { reportId: string | null; onOpenChange: (o: boolean) => void }) {
+  const { data: report } = useQuery({
+    queryKey: ["cc-report-detail", reportId],
+    queryFn: async () => {
+      if (!reportId) return null;
+      const { data } = await supabase.from("reports").select("*").eq("id", reportId).maybeSingle();
+      return data;
+    },
+    enabled: !!reportId,
+  });
+
+  if (!reportId) return null;
+  const r: any = report ?? {};
+  const actions: string[] = Array.isArray(r.recommended_actions) ? r.recommended_actions : [];
+
+  return (
+    <Dialog open={!!reportId} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{r.title ?? "Report"}</DialogTitle>
+          <DialogDescription>AI prediction inputs, confidence scores, and generated payload.</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <ScoreBox label="Confidence" value={r.confidence_score ?? 0} />
+            <ScoreBox label="Relevance" value={r.relevance_score ?? 0} />
+            <ScoreBox label="Quality" value={r.quality_score ?? 0} />
+            <ScoreBox label="Impact" value={r.impact_score ?? 0} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <Field label="Category" value={r.category} />
+            <Field label="Status" value={r.status} />
+            <Field label="Priority" value={r.priority ?? "—"} />
+            <Field label="Severity" value={r.severity ?? "—"} />
+            <Field label="Affected population" value={(r.affected_population ?? 0).toLocaleString()} />
+            <Field label="Risk level" value={r.risk_level ?? "—"} />
+          </div>
+
+          {r.ai_summary && (
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">AI summary</div>
+              <p className="mt-1 text-sm">{r.ai_summary}</p>
+            </div>
+          )}
+
+          {actions.length > 0 && (
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Recommended actions</div>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+                {actions.map((a, i) => <li key={i}>{a}</li>)}
+              </ul>
+            </div>
+          )}
+
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Raw AI payload</div>
+            <pre className="mt-1 max-h-64 overflow-auto rounded-md border border-border bg-secondary/40 p-3 text-[11px] leading-relaxed">
+{JSON.stringify(r.ai_analysis ?? { note: "No AI analysis stored" }, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ScoreBox({ label, value }: { label: string; value: number }) {
+  const color = value >= 85 ? "text-success" : value >= 70 ? "text-accent" : "text-warning";
+  return (
+    <div className="rounded-md border border-border p-2">
+      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`mt-0.5 text-lg font-semibold tabular-nums ${color}`}>{value}<span className="text-xs text-muted-foreground">%</span></div>
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: any }) {
+  return (
+    <div className="rounded-md border border-border p-2">
+      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-0.5 truncate font-medium">{String(value)}</div>
     </div>
   );
 }

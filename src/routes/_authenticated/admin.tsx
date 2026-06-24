@@ -56,14 +56,27 @@ function AdminPage() {
   const isModerator = useIsModerator();
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
+  const role = useAuthStore((s) => s.role);
   const navigate = useNavigate();
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (initialized && !isModerator) {
+    if (initialized && role !== null && !isModerator) {
       navigate({ to: "/dashboard", replace: true });
     }
-  }, [initialized, isModerator, navigate]);
+  }, [initialized, role, isModerator, navigate]);
+
+  // Realtime updates for the operations queue
+  useEffect(() => {
+    if (!isModerator) return;
+    const ch = supabase
+      .channel("admin-ops-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "reports" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin-reports"] });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [isModerator, qc]);
 
   const { data: reports = [] } = useQuery({
     queryKey: ["admin-reports"],

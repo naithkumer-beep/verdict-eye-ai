@@ -32,14 +32,16 @@ interface UserRow {
 function AdminUsersPage() {
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
+  const role = useAuthStore((s) => s.role);
   const me = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [q, setQ] = useState("");
 
   useEffect(() => {
-    if (initialized && !isAdmin) navigate({ to: "/dashboard", replace: true });
-  }, [initialized, isAdmin, navigate]);
+    // Wait until role has loaded; null means still fetching
+    if (initialized && role !== null && !isAdmin) navigate({ to: "/dashboard", replace: true });
+  }, [initialized, role, isAdmin, navigate]);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users"],

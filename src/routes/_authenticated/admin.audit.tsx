@@ -24,12 +24,13 @@ const ACTION_COLOR: Record<string, string> = {
 function AuditPage() {
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
+  const role = useAuthStore((s) => s.role);
   const navigate = useNavigate();
   const [q, setQ] = useState("");
 
   useEffect(() => {
-    if (initialized && !isAdmin) navigate({ to: "/dashboard", replace: true });
-  }, [initialized, isAdmin, navigate]);
+    if (initialized && role !== null && !isAdmin) navigate({ to: "/dashboard", replace: true });
+  }, [initialized, role, isAdmin, navigate]);
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["admin-audit"],
