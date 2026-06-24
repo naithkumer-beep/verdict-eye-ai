@@ -79,7 +79,7 @@ function RewardsPage() {
     enabled: !!user,
   });
 
-  // Real-time updates whenever new points are awarded
+  // Real-time updates whenever new points are awarded OR profile points change
   useEffect(() => {
     if (!user) return;
     const ch = supabase
@@ -92,13 +92,22 @@ function RewardsPage() {
           qc.invalidateQueries({ queryKey: ["rewards-profile", user.id] });
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${user.id}` },
+        () => qc.invalidateQueries({ queryKey: ["rewards-profile", user.id] }),
+      )
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
   }, [user, qc]);
 
-  const total = profile?.points ?? 0;
+  // Derive total from the events ledger so the UI stays consistent even if the
+  // profiles.points column is stale or hasn't been re-fetched yet.
+  const eventsTotal = events.reduce((sum, e) => sum + (e.points ?? 0), 0);
+  const total = Math.max(profile?.points ?? 0, eventsTotal);
   const submitted = events.filter((e) => e.kind === "report_created").length;
   const resolved = events.filter((e) => e.kind === "report_resolved").length;
+
 
   // Filters
   const [fromDate, setFromDate] = useState("");
