@@ -71,6 +71,8 @@ function NewReport() {
   const [category, setCategory] = useState<CategoryValue>("road_damage");
   const [department, setDepartment] = useState("");
   const [location, setLocation] = useState("");
+  const [coords, setCoords] = useState<[number, number] | null>(null);
+
 
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
