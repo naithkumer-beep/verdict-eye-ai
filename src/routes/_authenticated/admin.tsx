@@ -511,6 +511,13 @@ function AdminPage() {
                           {formatDistanceToNow(new Date(r.deadline_at), { addSuffix: true })}
                         </span>
                       )}
+                      <span className="flex items-center gap-1 text-success">
+                        <DollarSign className="h-3 w-3" />
+                        Est. repair{" "}
+                        <span className="font-mono tabular-nums">
+                          {(costByCat[r.category] ?? 0).toLocaleString()} MMK
+                        </span>
+                      </span>
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
