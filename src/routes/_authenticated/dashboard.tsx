@@ -42,6 +42,7 @@ function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const role = useAuthStore((s) => s.role);
   const initialized = useAuthStore((s) => s.initialized);
+  const isAdmin = useIsAdmin();
   const isModerator = useIsModerator();
   const navigate = useNavigate();
 
