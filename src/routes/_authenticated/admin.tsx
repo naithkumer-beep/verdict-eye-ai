@@ -56,14 +56,15 @@ function AdminPage() {
   const isModerator = useIsModerator();
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
+  const role = useAuthStore((s) => s.role);
   const navigate = useNavigate();
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (initialized && !isModerator) {
+    if (initialized && role !== null && !isModerator) {
       navigate({ to: "/dashboard", replace: true });
     }
-  }, [initialized, isModerator, navigate]);
+  }, [initialized, role, isModerator, navigate]);
 
   const { data: reports = [] } = useQuery({
     queryKey: ["admin-reports"],
