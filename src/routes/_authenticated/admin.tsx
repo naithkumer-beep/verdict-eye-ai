@@ -66,6 +66,18 @@ function AdminPage() {
     }
   }, [initialized, role, isModerator, navigate]);
 
+  // Realtime updates for the operations queue
+  useEffect(() => {
+    if (!isModerator) return;
+    const ch = supabase
+      .channel("admin-ops-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "reports" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin-reports"] });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [isModerator, qc]);
+
   const { data: reports = [] } = useQuery({
     queryKey: ["admin-reports"],
     queryFn: async () => {
