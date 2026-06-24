@@ -88,6 +88,23 @@ function NewReport() {
   const [submitting, setSubmitting] = useState(false);
   const [locating, setLocating] = useState(false);
 
+  // Department catalogue from DB. Auto-suggestion happens when value="auto".
+  const { data: departments = [] } = useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("departments")
+        .select("id,code,name_en,name_my")
+        .order("name_en");
+      return (data ?? []) as Array<{ id: string; code: string; name_en: string; name_my: string }>;
+    },
+    staleTime: 5 * 60_000,
+  });
+  const resolvedDeptCode =
+    department === "auto" ? CATEGORY_TO_DEPARTMENT[category] : department;
+  const resolvedDept = departments.find((d) => d.code === resolvedDeptCode);
+
+
   // Auto-capture live GPS location on mount, with Yangon fallback
   useEffect(() => {
     if (coords) return;
