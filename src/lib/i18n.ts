@@ -178,4 +178,14 @@ export function setLanguage(lang: "en" | "my") {
   void i18n.changeLanguage(lang);
 }
 
+// Myanmar digit conversion. Converts 0-9 in the input to ၀-၉ when active.
+const MY_DIGITS = ["၀", "၁", "၂", "၃", "၄", "၅", "၆", "၇", "၈", "၉"];
+export function toMyanmarDigits(input: string | number): string {
+  return String(input).replace(/[0-9]/g, (d) => MY_DIGITS[Number(d)]);
+}
+export function localNum(input: string | number): string {
+  return i18n.language === "my" ? toMyanmarDigits(input) : String(input);
+}
+
 export default i18n;
+
