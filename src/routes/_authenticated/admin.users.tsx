@@ -20,7 +20,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin } from "@/lib/auth-store";
 import { AvatarDisplay } from "@/components/avatar-display";
-import { suggestUserRole } from "@/lib/admin-ai.functions";
+import { suggestUserRole, listAdminUsers } from "@/lib/admin-ai.functions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -95,6 +95,7 @@ function AdminUsersPage() {
   const [suggestionFor, setSuggestionFor] = useState<UserRow | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const suggestFn = useServerFn(suggestUserRole);
+  const listUsersFn = useServerFn(listAdminUsers);
 
   useEffect(() => {
     if (initialized && role !== null && !isAdmin) navigate({ to: "/dashboard", replace: true });
@@ -103,26 +104,8 @@ function AdminUsersPage() {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async (): Promise<UserRow[]> => {
-      const [{ data: profiles }, { data: roles }] = await Promise.all([
-        supabase.from("profiles").select("id,email,display_name,avatar_url,created_at"),
-        supabase.from("user_roles").select("user_id,role"),
-      ]);
-      const roleByUser = new Map<string, Role>();
-      for (const r of roles ?? []) {
-        const current = roleByUser.get(r.user_id);
-        const rank = (x: Role) => (x === "admin" ? 3 : x === "moderator" ? 2 : 1);
-        if (!current || rank(r.role as Role) > rank(current)) {
-          roleByUser.set(r.user_id, r.role as Role);
-        }
-      }
-      return (profiles ?? []).map((p) => ({
-        id: p.id,
-        email: p.email,
-        display_name: p.display_name,
-        avatar_url: p.avatar_url,
-        created_at: p.created_at,
-        role: roleByUser.get(p.id) ?? "user",
-      }));
+      const rows = await listUsersFn();
+      return rows as UserRow[];
     },
     enabled: isAdmin,
   });
