@@ -18,18 +18,19 @@ import { useAuthStore } from "@/lib/auth-store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CIAP — AI Change Impact Analysis Platform" },
+      { title: "CivicLens AI — Yangon Civic Reporting" },
       {
         name: "description",
         content:
-          "Six-stage AI validation pipeline that rejects irrelevant, duplicate, low-quality, and low-confidence images before analysis. Built for civic issue reporting.",
+          "Report civic issues across Yangon — road damage, garbage, broken street lights, drainage. Bilingual (English / မြန်မာ) with a 6-stage AI validation pipeline.",
       },
-      { property: "og:title", content: "CIAP — Trustworthy AI Impact Analysis" },
+      { property: "og:title", content: "CivicLens AI — built for Yangon" },
       {
         property: "og:description",
         content:
-          "Multi-stage validation: technical checks, quality scoring, relevance detection, duplicate detection, AI cross-validation, confidence thresholds.",
+          "Live city map, comments, reactions, real-time admin updates, emergency hotlines, and bilingual UI for Yangon residents.",
       },
+
     ],
   }),
   component: LandingPage,
@@ -80,19 +81,20 @@ function LandingPage() {
           >
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-              Six-stage AI validation pipeline
+              Built for Yangon · ရန်ကုန်
             </div>
             <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
-              AI image analysis you can{" "}
+              Civic reporting,{" "}
               <span className="bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
-                actually trust.
+                AI-validated.
               </span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
-              CIAP rejects irrelevant, duplicate, low-quality, and low-confidence
-              images <em>before</em> any analysis runs. Every report ships with an
-              auditable confidence score.
+              CivicLens AI helps Yangon residents report road damage, garbage,
+              broken street lights, and more — every photo passes a 6-stage AI
+              validation pipeline before reaching city moderators.
             </p>
+
             <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
               <Button asChild size="lg">
                 <Link to={user ? "/dashboard" : "/auth"}>

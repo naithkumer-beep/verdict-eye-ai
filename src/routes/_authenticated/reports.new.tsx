@@ -1,5 +1,7 @@
 // New Report — runs the full 6-stage AI validation pipeline live.
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, ClientOnly } from "@tanstack/react-router";
+import { YangonMap } from "@/components/yangon-map";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -71,6 +73,8 @@ function NewReport() {
   const [category, setCategory] = useState<CategoryValue>("road_damage");
   const [department, setDepartment] = useState("");
   const [location, setLocation] = useState("");
+  const [coords, setCoords] = useState<[number, number] | null>(null);
+
 
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -199,6 +203,9 @@ function NewReport() {
             category,
             department: department.trim() || null,
             location: location.trim() || null,
+            latitude: coords?.[0] ?? null,
+            longitude: coords?.[1] ?? null,
+
             status: "analyzing",
             verification_status: "verified",
             severity: a.severity,
@@ -328,16 +335,57 @@ function NewReport() {
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="loc">Location (optional)</Label>
+              <Label htmlFor="loc">Location (Yangon street / township)</Label>
               <Input
                 id="loc"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="123 Main St, Cityname"
+                placeholder="e.g. Pyay Road, Kamayut Township, Yangon"
                 maxLength={200}
               />
             </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <div className="flex items-center justify-between">
+                <Label>Pin on map (Yangon)</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (!navigator.geolocation) {
+                        toast.error("Geolocation not supported");
+                        return;
+                      }
+                      navigator.geolocation.getCurrentPosition(
+                        (pos) => setCoords([pos.coords.latitude, pos.coords.longitude]),
+                        () => toast.error("Could not get your location"),
+                      );
+                    }}
+                  >
+                    Use my location
+                  </Button>
+                  {coords && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setCoords(null)}>
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <ClientOnly fallback={<div className="grid h-[260px] place-items-center rounded-lg border border-border text-xs text-muted-foreground">Loading map…</div>}>
+                <YangonMap
+                  height="260px"
+                  pickable
+                  picked={coords}
+                  onPick={(lat, lng) => setCoords([lat, lng])}
+                />
+              </ClientOnly>
+              <p className="text-[11px] text-muted-foreground">
+                Click anywhere on the map to drop a pin{coords && ` · ${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`}
+              </p>
+            </div>
           </div>
+
 
           <div>
             <Label>Evidence image</Label>
