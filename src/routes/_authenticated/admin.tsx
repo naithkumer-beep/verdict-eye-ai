@@ -118,11 +118,18 @@ function AdminPage() {
           </div>
         </div>
         {isAdmin && (
-          <Button asChild variant="outline" size="sm">
-            <Link to="/admin/users">
-              <Users className="mr-1.5 h-3.5 w-3.5" /> User management
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/admin/users">
+                <Users className="mr-1.5 h-3.5 w-3.5" /> User management
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/admin/audit">
+                <ScrollText className="mr-1.5 h-3.5 w-3.5" /> Audit log
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
 
