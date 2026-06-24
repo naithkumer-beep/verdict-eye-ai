@@ -109,7 +109,12 @@ function RewardsPage() {
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
       if (kind !== "all" && e.kind !== kind) return false;
-      if (reportId.trim() && !(e.report_id ?? "").toLowerCase().includes(reportId.trim().toLowerCase())) return false;
+      if (reportId.trim()) {
+        const q = reportId.trim().toLowerCase();
+        const rid = (e.report_id ?? "").toLowerCase();
+        const code = (reportCodeMap[e.report_id ?? ""] ?? "").toLowerCase();
+        if (!rid.includes(q) && !code.includes(q)) return false;
+      }
       const t = new Date(e.created_at).getTime();
       if (fromDate && t < new Date(fromDate).getTime()) return false;
       if (toDate && t > new Date(toDate).getTime() + 86_399_999) return false;
