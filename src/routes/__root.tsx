@@ -113,13 +113,43 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { Toaster } from "sonner";
+import { useAuthStore } from "@/lib/auth-store";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const init = useAuthStore((s) => s.init);
+  const router = useRouter();
+
+  useEffect(() => {
+    void init();
+  }, [init]);
+
+  useEffect(() => {
+    // Theme bootstrap
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("ciap-theme");
+    const isDark =
+      saved === "dark" ||
+      (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
+
+  useEffect(() => {
+    // Single global auth listener for cache/router invalidation
+    const { supabase } = require("@/integrations/supabase/client");
+    const { data } = supabase.auth.onAuthStateChange((event: string) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );
 }
