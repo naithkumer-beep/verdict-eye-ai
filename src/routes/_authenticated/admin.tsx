@@ -64,10 +64,21 @@ function AdminPage() {
   if (!isModerator) return null;
 
   const changeStatus = async (id: string, status: string) => {
+    const { data: prev } = await supabase.from("reports").select("status,title").eq("id", id).maybeSingle();
     const { error } = await supabase.from("reports").update({ status: status as never }).eq("id", id);
     if (error) {
       toast.error(error.message);
       return;
+    }
+    const uid = (await supabase.auth.getUser()).data.user?.id;
+    if (uid) {
+      await supabase.from("audit_logs").insert({
+        user_id: uid,
+        action: "report.status_change",
+        resource_type: "report",
+        resource_id: id,
+        metadata: { title: prev?.title, from: prev?.status, to: status } as never,
+      });
     }
     toast.success(`Status updated to ${status}`);
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
@@ -79,6 +90,16 @@ function AdminPage() {
     if (error) {
       toast.error(error.message);
       return;
+    }
+    const uid = (await supabase.auth.getUser()).data.user?.id;
+    if (uid) {
+      await supabase.from("audit_logs").insert({
+        user_id: uid,
+        action: "report.delete",
+        resource_type: "report",
+        resource_id: id,
+        metadata: { title } as never,
+      });
     }
     toast.success("Report deleted");
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
