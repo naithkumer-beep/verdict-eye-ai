@@ -129,10 +129,16 @@ function AdminPage() {
                   {r.title}
                 </Link>
                 <div className="truncate text-xs text-muted-foreground">{r.description}</div>
+                {r.department && (
+                  <div className="mt-1 flex items-center gap-1 text-[11px] text-accent">
+                    <Building2 className="h-3 w-3" /> {r.department}
+                  </div>
+                )}
               </div>
               <div className="truncate text-xs text-muted-foreground sm:col-span-2">
                 {getCategoryLabel(r.category)}
               </div>
+
               <div className="sm:col-span-3">
                 {isAdmin ? (
                   <Select value={r.status} onValueChange={(v) => changeStatus(r.id, v)}>
