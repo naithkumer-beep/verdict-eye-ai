@@ -137,33 +137,43 @@ function RewardsPage() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="border-accent/30 bg-gradient-to-br from-accent/10 via-card to-card p-5">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/15 text-accent">
-              <Trophy className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                Total points
+        {profileLoading ? (
+          <>
+            <Card className="p-5"><Skeleton className="h-12 w-full" /></Card>
+            <Card className="p-5"><Skeleton className="h-12 w-full" /></Card>
+            <Card className="p-5"><Skeleton className="h-12 w-full" /></Card>
+          </>
+        ) : (
+          <>
+            <Card className="border-accent/30 bg-gradient-to-br from-accent/10 via-card to-card p-5">
+              <div className="flex items-center gap-3">
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/15 text-accent">
+                  <Trophy className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Total points
+                  </div>
+                  <div className="text-3xl font-semibold tracking-tight">{total}</div>
+                </div>
               </div>
-              <div className="text-3xl font-semibold tracking-tight">{total}</div>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-5">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            Reports submitted
-          </div>
-          <div className="mt-1 text-2xl font-semibold">{submitted}</div>
-          <div className="text-xs text-muted-foreground">+{submitted * 10} pts earned</div>
-        </Card>
-        <Card className="p-5">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            Reports resolved
-          </div>
-          <div className="mt-1 text-2xl font-semibold">{resolved}</div>
-          <div className="text-xs text-muted-foreground">+{resolved * 50} pts earned</div>
-        </Card>
+            </Card>
+            <Card className="p-5">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Reports submitted
+              </div>
+              <div className="mt-1 text-2xl font-semibold">{submitted}</div>
+              <div className="text-xs text-muted-foreground">+{submitted * 10} pts earned</div>
+            </Card>
+            <Card className="p-5">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Reports resolved
+              </div>
+              <div className="mt-1 text-2xl font-semibold">{resolved}</div>
+              <div className="text-xs text-muted-foreground">+{resolved * 50} pts earned</div>
+            </Card>
+          </>
+        )}
       </div>
 
       <Card className="p-4">
