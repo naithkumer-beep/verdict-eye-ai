@@ -365,11 +365,6 @@ function AdminPage() {
                 <Users className="mr-1.5 h-3.5 w-3.5" /> Users
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/admin/audit">
-                <ScrollText className="mr-1.5 h-3.5 w-3.5" /> Audit log
-              </Link>
-            </Button>
           </div>
         )}
       </div>

@@ -183,6 +183,9 @@ function AdminUsersPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-muted-foreground" onClick={() => navigate({ to: "/admin" })}>
+          <ArrowLeft className="h-4 w-4" /> Back
+        </Button>
         <Users className="h-5 w-5 text-accent" />
         <div>
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
