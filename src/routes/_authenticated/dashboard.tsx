@@ -119,6 +119,27 @@ function DashboardPage() {
         </Button>
       </div>
 
+      {/* Reward banner */}
+      <Card className="flex flex-wrap items-center justify-between gap-3 border-accent/30 bg-gradient-to-br from-accent/10 via-card to-card p-5">
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/15 text-accent">
+            <Trophy className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              Reward points
+            </div>
+            <div className="text-2xl font-semibold tracking-tight">{points}</div>
+            <div className="text-xs text-muted-foreground">
+              Earn +10 per report submitted, +50 when it's resolved.
+            </div>
+          </div>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link to="/reports/new">Earn more <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+        </Button>
+      </Card>
+
       {/* Stat tiles */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
