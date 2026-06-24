@@ -81,8 +81,9 @@ disagree significantly, lower confidence to <60.
 
 QUALITY checks: blur, darkness, overexposure, obstruction, extreme crop,
 visible AI-generation/manipulation artifacts. Each issue detected drops
-quality score by 20. DO NOT consider image resolution, pixel count, or
-file dimensions — those are not quality signals here.
+quality score by 20. Do NOT consider image resolution, pixel count, or
+file dimensions at all — ignore them completely when scoring quality.
+
 
 Return STRICT JSON with this exact shape and nothing else:
 {
