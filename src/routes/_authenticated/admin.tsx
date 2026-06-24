@@ -1,9 +1,10 @@
-// Admin panel — moderators/admins. Admins can change status, assign
-// priority/department, and delete reports. Trigger autosets deadline +
-// work-order number based on priority/status changes.
+// Admin Panel — operational/management hub for moderators & admins.
+// Owns CRUD-style actions on reports (status/priority/department/delete),
+// per-report AI inspector, escalation trigger, plus links to user
+// management, audit log, and the read-only Command Center.
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ShieldCheck,
   Trash2,
@@ -13,6 +14,9 @@ import {
   Flag,
   Clock,
   AlertCircle,
+  Zap,
+  Gauge,
+  Sparkles,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +28,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { useServerFn } from "@tanstack/react-start";
+import { runEscalation } from "@/lib/admin-ai.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin, useIsModerator } from "@/lib/auth-store";
 import { getCategoryLabel, PRIORITIES, type PriorityValue } from "@/lib/categories";
@@ -31,7 +44,7 @@ import { formatDistanceToNow, isPast } from "date-fns";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({ meta: [{ title: "Admin — CivicLens AI" }] }),
+  head: () => ({ meta: [{ title: "Admin Panel — CivicLens AI" }] }),
   component: AdminPage,
 });
 
@@ -59,6 +72,8 @@ function AdminPage() {
   const role = useAuthStore((s) => s.role);
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const escalateFn = useServerFn(runEscalation);
+  const [inspectId, setInspectId] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialized && role !== null && !isModerator) {
@@ -172,6 +187,20 @@ function AdminPage() {
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
+  const escalate = () => {
+    toast.promise(
+      escalateFn({ data: undefined } as never).then((r: any) => {
+        qc.invalidateQueries({ queryKey: ["admin-reports"] });
+        return r;
+      }),
+      {
+        loading: "Running escalation…",
+        success: (r: any) => `Escalated ${r?.escalated ?? 0} report(s)`,
+        error: "Escalation failed",
+      },
+    );
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -179,18 +208,30 @@ function AdminPage() {
           <ShieldCheck className="h-5 w-5 text-accent" />
           <div>
             <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-              Admin
+              Admin Panel
             </div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Operations queue
+              Operations &amp; management
             </h1>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Manage reports, users, and audits. For executive KPIs &amp; AI insights, open the{" "}
+              <Link to="/admin/command" className="underline">Command Center</Link>.
+            </p>
           </div>
         </div>
         {isAdmin && (
           <div className="flex flex-wrap gap-2">
+            <Button asChild variant="default" size="sm">
+              <Link to="/admin/command">
+                <Gauge className="mr-1.5 h-3.5 w-3.5" /> Command Center
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={escalate}>
+              <Zap className="mr-1.5 h-3.5 w-3.5" /> Run escalation
+            </Button>
             <Button asChild variant="outline" size="sm">
               <Link to="/admin/users">
-                <Users className="mr-1.5 h-3.5 w-3.5" /> User management
+                <Users className="mr-1.5 h-3.5 w-3.5" /> Users
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
@@ -201,6 +242,7 @@ function AdminPage() {
           </div>
         )}
       </div>
+
 
       <Card className="overflow-hidden p-0">
         <div className="divide-y divide-border">
@@ -257,18 +299,31 @@ function AdminPage() {
                       )}
                     </div>
                   </div>
-                  {isAdmin && (
+                  <div className="flex shrink-0 items-center gap-1">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => delReport(r.id, r.title)}
-                      aria-label="Delete"
+                      className="h-7 w-7"
+                      onClick={() => setInspectId(r.id)}
+                      aria-label="Inspect AI"
+                      title="AI prediction inspector"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Sparkles className="h-3.5 w-3.5 text-accent" />
                     </Button>
-                  )}
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => delReport(r.id, r.title)}
+                        aria-label="Delete"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
+
 
                 {/* Ops controls */}
                 <div className="grid gap-2 sm:grid-cols-3">
@@ -371,6 +426,96 @@ function AdminPage() {
           )}
         </div>
       </Card>
+
+      <PredictionInspector reportId={inspectId} onClose={() => setInspectId(null)} />
     </div>
   );
 }
+
+function PredictionInspector({ reportId, onClose }: { reportId: string | null; onClose: () => void }) {
+  const { data: report } = useQuery({
+    queryKey: ["admin-report-detail", reportId],
+    queryFn: async () => {
+      if (!reportId) return null;
+      const { data } = await supabase.from("reports").select("*").eq("id", reportId).maybeSingle();
+      return data;
+    },
+    enabled: !!reportId,
+  });
+
+  if (!reportId) return null;
+  const r: any = report ?? {};
+  const actions: string[] = Array.isArray(r.recommended_actions) ? r.recommended_actions : [];
+
+  return (
+    <Dialog open={!!reportId} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{r.title ?? "Report"}</DialogTitle>
+          <DialogDescription>AI prediction inputs, confidence scores, and generated payload.</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <ScoreBox label="Confidence" value={r.confidence_score ?? 0} />
+            <ScoreBox label="Relevance" value={r.relevance_score ?? 0} />
+            <ScoreBox label="Quality" value={r.quality_score ?? 0} />
+            <ScoreBox label="Impact" value={r.impact_score ?? 0} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <Field label="Category" value={r.category} />
+            <Field label="Status" value={r.status} />
+            <Field label="Priority" value={r.priority ?? "—"} />
+            <Field label="Severity" value={r.severity ?? "—"} />
+            <Field label="Affected population" value={(r.affected_population ?? 0).toLocaleString()} />
+            <Field label="Risk level" value={r.risk_level ?? "—"} />
+          </div>
+
+          {r.ai_summary && (
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">AI summary</div>
+              <p className="mt-1 text-sm">{r.ai_summary}</p>
+            </div>
+          )}
+
+          {actions.length > 0 && (
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Recommended actions</div>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+                {actions.map((a, i) => <li key={i}>{a}</li>)}
+              </ul>
+            </div>
+          )}
+
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Raw AI payload</div>
+            <pre className="mt-1 max-h-64 overflow-auto rounded-md border border-border bg-secondary/40 p-3 text-[11px] leading-relaxed">
+{JSON.stringify(r.ai_analysis ?? { note: "No AI analysis stored" }, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ScoreBox({ label, value }: { label: string; value: number }) {
+  const color = value >= 85 ? "text-success" : value >= 70 ? "text-accent" : "text-warning";
+  return (
+    <div className="rounded-md border border-border p-2">
+      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`mt-0.5 text-lg font-semibold tabular-nums ${color}`}>{value}<span className="text-xs text-muted-foreground">%</span></div>
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: any }) {
+  return (
+    <div className="rounded-md border border-border p-2">
+      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-0.5 truncate font-medium">{String(value)}</div>
+    </div>
+  );
+}
+
