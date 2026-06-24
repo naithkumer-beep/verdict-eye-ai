@@ -106,9 +106,10 @@ function AdminPage() {
       action,
       entity_type: "report",
       entity_id,
-      details,
+      details: details as never,
     });
   };
+
 
   const changeStatus = async (id: string, status: string) => {
     const { data: prev } = await supabase
