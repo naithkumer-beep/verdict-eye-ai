@@ -282,30 +282,80 @@ function AdminPage() {
     );
   };
 
+  const refreshInsights = () => {
+    toast.promise(
+      refreshFn({ data: undefined } as never).then(() =>
+        qc.invalidateQueries({ queryKey: ["admin-prediction"] }),
+      ),
+      {
+        loading: "Refreshing AI insights…",
+        success: "Insights updated",
+        error: "Failed to refresh",
+      },
+    );
+  };
+
+  // ---- Command-center derived metrics ----
+  const openReports = reports.filter((r) => r.status !== "resolved" && r.status !== "rejected");
+  const criticalCount = openReports.filter((r) => r.priority === "critical").length;
+  const overdueCount = openReports.filter(
+    (r) => r.deadline_at && isPast(new Date(r.deadline_at)),
+  ).length;
+  const costByCat = Object.fromEntries(
+    costs.map((c) => [c.category, Number(c.estimated_cost_mmk)]),
+  );
+  const totalCost = openReports.reduce(
+    (sum, r) => sum + (costByCat[r.category] ?? 0),
+    0,
+  );
+  const deptStats = departments
+    .map((d) => {
+      const ds = reports.filter((r) => r.department_id === d.id);
+      const resolvedCount = ds.filter((r) => r.status === "resolved").length;
+      const total = ds.length;
+      const pct = total ? Math.round((resolvedCount / total) * 100) : 0;
+      return { id: d.id, name: d.name_en, total, resolved: resolvedCount, pct };
+    })
+    .sort((a, b) => b.pct - a.pct);
+  const markers = reports
+    .filter((r) => r.latitude != null && r.longitude != null)
+    .slice(0, 200)
+    .map((r) => ({
+      id: r.id,
+      lat: Number(r.latitude),
+      lng: Number(r.longitude),
+      title: r.title,
+      status: r.status,
+    }));
+  const insights: Array<{ title: string; body: string }> =
+    (prediction?.payload as any)?.insights ?? [];
+
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-accent" />
           <div>
-            <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
               Admin Panel
+              {isAdmin && (
+                <Badge variant="outline" className="font-mono text-[10px] uppercase">
+                  <Radio className="mr-1 h-3 w-3 animate-pulse text-success" /> Live
+                </Badge>
+              )}
             </div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Operations &amp; management
+              Operations, KPIs &amp; AI insights
             </h1>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Manage reports, users, and audits. For executive KPIs &amp; AI insights, open the{" "}
-              <Link to="/admin/command" className="underline">Command Center</Link>.
+              Manage reports and review executive metrics in one place.
             </p>
           </div>
         </div>
         {isAdmin && (
           <div className="flex flex-wrap gap-2">
-            <Button asChild variant="default" size="sm">
-              <Link to="/admin/command">
-                <Gauge className="mr-1.5 h-3.5 w-3.5" /> Command Center
-              </Link>
+            <Button size="sm" onClick={refreshInsights}>
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Refresh AI
             </Button>
             <Button variant="outline" size="sm" onClick={escalate}>
               <Zap className="mr-1.5 h-3.5 w-3.5" /> Run escalation
@@ -323,6 +373,89 @@ function AdminPage() {
           </div>
         )}
       </div>
+
+      {isAdmin && (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Kpi icon={Activity} label="Open issues" value={openReports.length} tone="info" />
+            <Kpi icon={AlertTriangle} label="Critical" value={criticalCount} tone="destructive" />
+            <Kpi icon={Clock} label="Overdue" value={overdueCount} tone="warning" />
+            <Kpi icon={DollarSign} label="Est. cost (MMK)" value={totalCost.toLocaleString()} tone="success" />
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Card className="p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-medium">Department performance</h2>
+                <Badge variant="outline" className="font-mono text-[10px] uppercase">
+                  {deptStats.length}
+                </Badge>
+              </div>
+              <div className="space-y-2.5">
+                {deptStats.map((d) => (
+                  <div key={d.id}>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="truncate">{d.name}</span>
+                      <span className="tabular-nums text-muted-foreground">
+                        {d.resolved}/{d.total} · {d.pct}%
+                      </span>
+                    </div>
+                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className="h-full bg-gradient-to-r from-accent to-success"
+                        style={{ width: `${d.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {deptStats.length === 0 && (
+                  <div className="text-sm text-muted-foreground">No department data yet.</div>
+                )}
+              </div>
+            </Card>
+
+            <Card className="p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-accent" />
+                <h2 className="text-sm font-medium">AI predictions</h2>
+              </div>
+              {insights.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No insights yet. Click <strong>Refresh AI</strong> to generate.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {insights.map((ins, i) => (
+                    <li key={i} className="rounded-md border border-border bg-secondary/30 p-3">
+                      <div className="text-sm font-medium">{ins.title}</div>
+                      <p className="mt-1 text-xs text-muted-foreground">{ins.body}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          </div>
+
+          <Card className="overflow-hidden p-0">
+            <div className="border-b border-border p-4">
+              <h2 className="text-sm font-medium">Hotspot map</h2>
+              <p className="text-xs text-muted-foreground">
+                Geo-located open and recent reports.
+              </p>
+            </div>
+            <ClientOnly
+              fallback={
+                <div className="grid h-[400px] place-items-center text-sm text-muted-foreground">
+                  Loading map…
+                </div>
+              }
+            >
+              <YangonMap markers={markers} height="400px" />
+            </ClientOnly>
+          </Card>
+        </>
+      )}
+
 
 
       <Card className="overflow-hidden p-0">
