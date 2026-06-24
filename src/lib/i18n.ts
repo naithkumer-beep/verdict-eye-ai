@@ -66,11 +66,27 @@ const en = {
     pinOnMap: "Pin on map",
     useMyLocation: "Use my location",
     viewOnMap: "View on map",
+    allStatuses: "All statuses",
+    allCategories: "All categories",
+    showing: "Showing",
+    of: "of",
+    liveMap: "Live map",
+    reportsOnMap: "Reports on map",
+    loadingMap: "Loading map…",
+    openReport: "Open report",
   },
   admin: {
     queue: "Moderation queue",
     changeStatus: "Change status",
     deleteReport: "Delete report",
+    userManagement: "User management",
+    auditLog: "Audit log",
+    report: "Report",
+    category: "Category",
+    status: "Status",
+    submitted: "Submitted",
+    actions: "Actions",
+    noReports: "No reports in the queue.",
   },
   settings: {
     profile: "Profile",
@@ -79,6 +95,7 @@ const en = {
     removeAvatar: "Remove",
   },
 };
+
 
 const my = {
   nav: {
@@ -144,11 +161,27 @@ const my = {
     pinOnMap: "မြေပုံပေါ်တွင်မှတ်",
     useMyLocation: "ကျွန်ုပ်တည်နေရာ",
     viewOnMap: "မြေပုံတွင်ကြည့်",
+    allStatuses: "အခြေအနေအားလုံး",
+    allCategories: "အမျိုးအစားအားလုံး",
+    showing: "ပြသနေသည်",
+    of: "/",
+    liveMap: "တိုက်ရိုက်မြေပုံ",
+    reportsOnMap: "မြေပုံပေါ်ရှိအစီရင်ခံစာများ",
+    loadingMap: "မြေပုံဖွင့်နေသည်…",
+    openReport: "အစီရင်ခံစာဖွင့်",
   },
   admin: {
     queue: "စောင့်ကြည့်စာရင်း",
     changeStatus: "အခြေအနေပြောင်း",
     deleteReport: "အစီရင်ခံစာဖျက်",
+    userManagement: "အသုံးပြုသူစီမံ",
+    auditLog: "မှတ်တမ်း",
+    report: "အစီရင်ခံစာ",
+    category: "အမျိုးအစား",
+    status: "အခြေအနေ",
+    submitted: "တင်သွင်းချိန်",
+    actions: "လုပ်ဆောင်ချက်",
+    noReports: "စောင့်ဆိုင်းနေသော အစီရင်ခံစာ မရှိပါ။",
   },
   settings: {
     profile: "ပရိုဖိုင်",
@@ -157,6 +190,7 @@ const my = {
     removeAvatar: "ဖယ်ရှား",
   },
 };
+
 
 let initialized = false;
 export function initI18n() {

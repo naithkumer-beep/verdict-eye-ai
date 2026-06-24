@@ -71,7 +71,7 @@ export function YangonMap({
 
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
-    const map = L.map(ref.current).setView(center, zoom);
+    const map = L.map(ref.current, { preferCanvas: true }).setView(center, zoom);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: "© OpenStreetMap contributors",
@@ -85,12 +85,24 @@ export function YangonMap({
       });
     }
 
+    // Force size recalc — Leaflet often mounts before the container settles its
+    // final size (sidebar transitions, suspense fallbacks), which leaves the
+    // map looking frozen on first open.
+    const t1 = window.setTimeout(() => map.invalidateSize(), 50);
+    const t2 = window.setTimeout(() => map.invalidateSize(), 300);
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(ref.current);
+
     return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   // Update report markers
   useEffect(() => {
