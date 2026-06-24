@@ -74,9 +74,9 @@ export const refreshAdminPredictions = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
       .from("ai_predictions")
-      .upsert({ kind: "command_center", payload, generated_at: new Date().toISOString() });
+      .upsert({ kind: "command_center", payload: payload as never, generated_at: new Date().toISOString() });
 
-    return { ok: true, payload };
+    return { ok: true, payload: JSON.stringify(payload) };
   });
 
 export const runEscalation = createServerFn({ method: "POST" })
