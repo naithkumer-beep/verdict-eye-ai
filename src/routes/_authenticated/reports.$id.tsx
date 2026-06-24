@@ -1,18 +1,22 @@
-// Single report detail page.
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+// Single report detail page — comments, reactions, mini-map, owner/admin delete.
+import { createFileRoute, Link, useNavigate, ClientOnly } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Trash2, MapPin, Building2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthStore } from "@/lib/auth-store";
+import { useAuthStore, useIsAdmin } from "@/lib/auth-store";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
+import { ReportComments } from "@/components/report-comments";
+import { ReportReactions } from "@/components/report-reactions";
+import { YangonMap } from "@/components/yangon-map";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/reports/$id")({
-  head: () => ({ meta: [{ title: "Report — CIAP" }] }),
+  head: () => ({ meta: [{ title: "Report — CivicLens AI" }] }),
   component: ReportDetail,
 });
 
@@ -27,7 +31,9 @@ const STATUS_COLOR: Record<string, string> = {
 function ReportDetail() {
   const { id } = Route.useParams();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = useIsAdmin();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { data: report, isLoading } = useQuery({
     queryKey: ["report", id],
@@ -50,7 +56,6 @@ function ReportDetail() {
         .select("*")
         .eq("report_id", id);
       if (error) throw error;
-      // Re-sign URLs (originals expire)
       return Promise.all(
         (data ?? []).map(async (img) => {
           const { data: signed } = await supabase.storage
@@ -82,16 +87,14 @@ function ReportDetail() {
   }
 
   const isOwner = user?.id === report.user_id;
+  const canDelete = isOwner || isAdmin;
 
   const onDelete = async () => {
-    if (!isOwner) return;
-    if (!confirm("Soft-delete this report?")) return;
-    const { error } = await supabase
-      .from("reports")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", report.id);
+    if (!canDelete) return;
+    if (!confirm("Delete this report? This cannot be undone.")) return;
+    const { error } = await supabase.from("reports").delete().eq("id", report.id);
     if (error) {
-      toast.error("Delete failed");
+      toast.error(error.message);
       return;
     }
     toast.success("Report deleted");
@@ -102,6 +105,8 @@ function ReportDetail() {
     ? (report.recommended_actions as string[])
     : [];
 
+  const hasGeo = report.latitude != null && report.longitude != null;
+
   return (
     <div className="mx-auto max-w-5xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div className="flex items-center justify-between">
@@ -110,9 +115,9 @@ function ReportDetail() {
             <ArrowLeft className="mr-1 h-3.5 w-3.5" /> All reports
           </Link>
         </Button>
-        {isOwner && (
+        {canDelete && (
           <Button variant="outline" size="sm" onClick={onDelete}>
-            <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+            <Trash2 className="mr-1 h-3.5 w-3.5" /> {t("common.delete")}
           </Button>
         )}
       </div>
@@ -154,19 +159,44 @@ function ReportDetail() {
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
-          {report.department && (
-            <span className="flex items-center gap-1">
-              <Building2 className="h-3 w-3" /> {report.department}
-            </span>
-          )}
-          {report.location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" /> {report.location}
-            </span>
-          )}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4">
+          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+            {report.department && (
+              <span className="flex items-center gap-1">
+                <Building2 className="h-3 w-3" /> {report.department}
+              </span>
+            )}
+            {report.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" /> {report.location}
+              </span>
+            )}
+          </div>
+          <ReportReactions reportId={report.id} />
         </div>
       </Card>
+
+      {/* Map */}
+      {hasGeo && (
+        <Card className="overflow-hidden p-0">
+          <ClientOnly fallback={<div className="grid h-[300px] place-items-center text-sm text-muted-foreground">Loading map…</div>}>
+            <YangonMap
+              center={[report.latitude as number, report.longitude as number]}
+              markers={[
+                {
+                  id: report.id,
+                  lat: report.latitude as number,
+                  lng: report.longitude as number,
+                  title: report.title,
+                  status: report.status,
+                },
+              ]}
+              height="300px"
+              zoom={15}
+            />
+          </ClientOnly>
+        </Card>
+      )}
 
       {/* AI scores */}
       <div className="grid gap-3 sm:grid-cols-3">
@@ -228,6 +258,9 @@ function ReportDetail() {
         <Metric label="Population" value={(report.affected_population ?? 0).toLocaleString()} suffix="" />
         <Metric label="Severity" value={report.severity ?? "—"} suffix="" />
       </Card>
+
+      {/* Comments */}
+      <ReportComments reportId={report.id} />
     </div>
   );
 }
@@ -254,7 +287,15 @@ function ScoreCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-function Metric({ label, value, suffix }: { label: string; value: string | number; suffix: string }) {
+function Metric({
+  label,
+  value,
+  suffix,
+}: {
+  label: string;
+  value: string | number;
+  suffix: string;
+}) {
   return (
     <div className="bg-card p-4">
       <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
