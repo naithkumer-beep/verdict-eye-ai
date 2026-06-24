@@ -36,6 +36,7 @@ import { technicalValidate, computePerceptualHash } from "@/lib/image-utils";
 import { validateReportImage, type ValidationResult } from "@/lib/ai-validation.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { localNum } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/reports/new")({
   head: () => ({ meta: [{ title: "New report — CIAP" }] }),
