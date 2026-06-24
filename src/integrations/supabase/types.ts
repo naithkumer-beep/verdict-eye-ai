@@ -14,16 +14,310 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string | null
+          metadata: Json | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          metadata?: Json | null
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          metadata?: Json | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      report_images: {
+        Row: {
+          ai_analysis: Json | null
+          created_at: string
+          height: number | null
+          id: string
+          mime_type: string | null
+          perceptual_hash: string | null
+          rejected: boolean | null
+          rejection_reason: string | null
+          report_id: string
+          size_bytes: number | null
+          storage_path: string
+          url: string
+          user_id: string
+          validation_result: Json | null
+          width: number | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          perceptual_hash?: string | null
+          rejected?: boolean | null
+          rejection_reason?: string | null
+          report_id: string
+          size_bytes?: number | null
+          storage_path: string
+          url: string
+          user_id: string
+          validation_result?: Json | null
+          width?: number | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          perceptual_hash?: string | null
+          rejected?: boolean | null
+          rejection_reason?: string | null
+          report_id?: string
+          size_bytes?: number | null
+          storage_path?: string
+          url?: string
+          user_id?: string
+          validation_result?: Json | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_images_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          affected_population: number | null
+          ai_analysis: Json | null
+          ai_summary: string | null
+          category: Database["public"]["Enums"]["report_category"]
+          confidence_score: number | null
+          created_at: string
+          deleted_at: string | null
+          department: string | null
+          description: string
+          id: string
+          impact_score: number | null
+          latitude: number | null
+          location: string | null
+          longitude: number | null
+          priority_score: number | null
+          quality_score: number | null
+          recommended_actions: Json | null
+          relevance_score: number | null
+          risk_level: string | null
+          severity: Database["public"]["Enums"]["severity_level"] | null
+          status: Database["public"]["Enums"]["report_status"]
+          title: string
+          updated_at: string
+          user_id: string
+          verification_status: Database["public"]["Enums"]["verification_status"]
+        }
+        Insert: {
+          affected_population?: number | null
+          ai_analysis?: Json | null
+          ai_summary?: string | null
+          category: Database["public"]["Enums"]["report_category"]
+          confidence_score?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          department?: string | null
+          description: string
+          id?: string
+          impact_score?: number | null
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          priority_score?: number | null
+          quality_score?: number | null
+          recommended_actions?: Json | null
+          relevance_score?: number | null
+          risk_level?: string | null
+          severity?: Database["public"]["Enums"]["severity_level"] | null
+          status?: Database["public"]["Enums"]["report_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+          verification_status?: Database["public"]["Enums"]["verification_status"]
+        }
+        Update: {
+          affected_population?: number | null
+          ai_analysis?: Json | null
+          ai_summary?: string | null
+          category?: Database["public"]["Enums"]["report_category"]
+          confidence_score?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          department?: string | null
+          description?: string
+          id?: string
+          impact_score?: number | null
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          priority_score?: number | null
+          quality_score?: number | null
+          recommended_actions?: Json | null
+          relevance_score?: number | null
+          risk_level?: string | null
+          severity?: Database["public"]["Enums"]["severity_level"] | null
+          status?: Database["public"]["Enums"]["report_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+          verification_status?: Database["public"]["Enums"]["verification_status"]
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "moderator" | "admin"
+      report_category:
+        | "road_damage"
+        | "garbage"
+        | "street_light"
+        | "water_drainage"
+        | "public_safety"
+        | "vandalism"
+        | "building_hazard"
+      report_status:
+        | "pending"
+        | "analyzing"
+        | "verified"
+        | "rejected"
+        | "resolved"
+      severity_level: "low" | "medium" | "high" | "critical"
+      verification_status: "unverified" | "verified" | "flagged"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +444,26 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "moderator", "admin"],
+      report_category: [
+        "road_damage",
+        "garbage",
+        "street_light",
+        "water_drainage",
+        "public_safety",
+        "vandalism",
+        "building_hazard",
+      ],
+      report_status: [
+        "pending",
+        "analyzing",
+        "verified",
+        "rejected",
+        "resolved",
+      ],
+      severity_level: ["low", "medium", "high", "critical"],
+      verification_status: ["unverified", "verified", "flagged"],
+    },
   },
 } as const
