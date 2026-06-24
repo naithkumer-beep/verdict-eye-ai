@@ -50,12 +50,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user, role, signOut } = useAuthStore();
   const isModerator = useIsModerator();
+  const isAdmin = role === "admin";
   const { t } = useTranslation();
   const qc = useQueryClient();
 
+  // Admins don't earn or see rewards
+  const visibleBase = isAdmin ? BASE_NAV.filter((i) => i.to !== "/rewards") : BASE_NAV;
   const NAV: NavItem[] = isModerator
-    ? [{ to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard }, ...BASE_NAV]
-    : BASE_NAV;
+    ? [{ to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard }, ...visibleBase]
+    : visibleBase;
+
 
   // Unread notifications count (real-time)
   const { data: unread = 0 } = useQuery({
