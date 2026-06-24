@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -136,9 +137,7 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
-    // Single global auth listener for cache/router invalidation
-    const { supabase } = require("@/integrations/supabase/client");
-    const { data } = supabase.auth.onAuthStateChange((event: string) => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
