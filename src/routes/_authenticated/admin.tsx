@@ -733,3 +733,35 @@ function Field({ label, value }: { label: string; value: any }) {
   );
 }
 
+
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+  tone: "info" | "destructive" | "warning" | "success";
+}) {
+  const colors = {
+    info: "text-info bg-info/10",
+    destructive: "text-destructive bg-destructive/10",
+    warning: "text-warning bg-warning/10",
+    success: "text-success bg-success/10",
+  } as const;
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-3">
+        <div className={`grid h-9 w-9 place-items-center rounded-md ${colors[tone]}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+          <div className="mt-0.5 text-xl font-semibold tabular-nums">{value}</div>
+        </div>
+      </div>
+    </Card>
+  );
+}
