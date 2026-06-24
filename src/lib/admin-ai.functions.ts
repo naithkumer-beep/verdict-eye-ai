@@ -30,7 +30,7 @@ export const refreshAdminPredictions = createServerFn({ method: "POST" })
       .join(", ");
 
     const key = process.env.LOVABLE_API_KEY;
-    let payload: unknown = {
+    let payload: Record<string, unknown> = {
       insights: [
         { title: "Top category", body: `Highest volume in the last 30 days: ${summary || "no data"}` },
       ],
