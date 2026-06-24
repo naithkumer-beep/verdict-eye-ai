@@ -48,7 +48,7 @@ function RewardsPage() {
     enabled: !!user,
   });
 
-  const { data: events = [] } = useQuery({
+  const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ["reward-events", user?.id],
     queryFn: async () => {
       if (!user) return [];
