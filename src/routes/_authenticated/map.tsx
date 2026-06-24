@@ -34,8 +34,18 @@ const STATUS_COLORS: Record<string, string> = {
 
 function MapPage() {
   const { t } = useTranslation();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>(() =>
+    typeof window === "undefined" ? "all" : localStorage.getItem("cl_map_status") ?? "all",
+  );
+  const [categoryFilter, setCategoryFilter] = useState<string>(() =>
+    typeof window === "undefined" ? "all" : localStorage.getItem("cl_map_category") ?? "all",
+  );
+  useEffect(() => {
+    localStorage.setItem("cl_map_status", statusFilter);
+  }, [statusFilter]);
+  useEffect(() => {
+    localStorage.setItem("cl_map_category", categoryFilter);
+  }, [categoryFilter]);
 
   const { data: reports = [] } = useQuery({
     queryKey: ["map-reports"],
