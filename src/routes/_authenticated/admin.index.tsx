@@ -50,7 +50,7 @@ import { sendTransactionalEmail } from "@/lib/email/send";
 import { YangonMap } from "@/components/yangon-map";
 
 
-export const Route = createFileRoute("/_authenticated/admin")({
+export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({ meta: [{ title: "Admin Panel — CivicLens AI" }] }),
   component: AdminPage,
 });
