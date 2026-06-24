@@ -84,9 +84,15 @@ function NewReport() {
   const [submitting, setSubmitting] = useState(false);
   const [locating, setLocating] = useState(false);
 
-  // Auto-capture live GPS location on mount
+  // Auto-capture live GPS location on mount, with Yangon fallback
   useEffect(() => {
-    if (!navigator.geolocation || coords) return;
+    if (coords) return;
+    const YANGON: [number, number] = [16.8409, 96.1735];
+    if (!navigator.geolocation) {
+      setCoords(YANGON);
+      toast.message("Using Yangon city center", { description: "Geolocation not supported — drag the pin to your exact spot." });
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -94,9 +100,15 @@ function NewReport() {
         setLocating(false);
         toast.success("Live location captured");
       },
-      () => {
+      (err) => {
         setLocating(false);
-        // Silent — user can pin manually
+        setCoords(YANGON);
+        toast.message("Using Yangon city center", {
+          description:
+            err.code === err.PERMISSION_DENIED
+              ? "Location permission denied — tap the map to pin the exact spot."
+              : "Couldn't get GPS — tap the map to pin the exact spot.",
+        });
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
     );
