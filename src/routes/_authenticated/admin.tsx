@@ -300,18 +300,31 @@ function AdminPage() {
                       )}
                     </div>
                   </div>
-                  {isAdmin && (
+                  <div className="flex shrink-0 items-center gap-1">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => delReport(r.id, r.title)}
-                      aria-label="Delete"
+                      className="h-7 w-7"
+                      onClick={() => setInspectId(r.id)}
+                      aria-label="Inspect AI"
+                      title="AI prediction inspector"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Sparkles className="h-3.5 w-3.5 text-accent" />
                     </Button>
-                  )}
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => delReport(r.id, r.title)}
+                        aria-label="Delete"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
+
 
                 {/* Ops controls */}
                 <div className="grid gap-2 sm:grid-cols-3">
