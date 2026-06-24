@@ -165,24 +165,68 @@ function RewardsPage() {
         </Card>
       </div>
 
+      <Card className="p-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+          <div className="space-y-1.5">
+            <Label htmlFor="rw-from" className="text-xs">From</Label>
+            <Input id="rw-from" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rw-to" className="text-xs">To</Label>
+            <Input id="rw-to" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Kind</Label>
+            <Select value={kind} onValueChange={setKind}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All kinds</SelectItem>
+                <SelectItem value="report_created">Report submitted</SelectItem>
+                <SelectItem value="report_resolved">Report resolved</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rw-rid" className="text-xs">Report ID</Label>
+            <Input id="rw-rid" placeholder="Filter by report id" value={reportId} onChange={(e) => setReportId(e.target.value)} />
+          </div>
+          <div className="flex gap-2">
+            {hasFilters && (
+              <Button variant="outline" size="sm" onClick={clearFilters} className="flex-1">
+                <X className="mr-1 h-3.5 w-3.5" /> Clear
+              </Button>
+            )}
+            <Button size="sm" onClick={exportCsv} disabled={filteredEvents.length === 0} className="flex-1">
+              <Download className="mr-1 h-3.5 w-3.5" /> Export CSV
+            </Button>
+          </div>
+        </div>
+      </Card>
+
       <Card className="overflow-hidden p-0">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="text-sm font-medium">Activity ledger</div>
-          <Badge variant="outline" className="font-mono text-[10px]">{events.length} events</Badge>
+          <Badge variant="outline" className="font-mono text-[10px]">
+            {filteredEvents.length}{hasFilters ? ` of ${events.length}` : ""} events
+          </Badge>
         </div>
-        {events.length === 0 ? (
+        {filteredEvents.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Trophy className="mx-auto mb-3 h-6 w-6" />
-            No rewards yet. Submit your first report to earn 10 points.
+            {events.length === 0 ? "No rewards yet. Submit your first report to earn 10 points." : "No events match the current filters."}
             <div className="mt-4">
-              <Button asChild size="sm">
-                <Link to="/reports/new">Submit a report <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
-              </Button>
+              {events.length === 0 ? (
+                <Button asChild size="sm">
+                  <Link to="/reports/new">Submit a report <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={clearFilters}>Clear filters</Button>
+              )}
             </div>
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {events.map((e) => {
+            {filteredEvents.map((e) => {
               const meta = KIND_META[e.kind] ?? {
                 label: e.kind,
                 icon: Sparkles,
