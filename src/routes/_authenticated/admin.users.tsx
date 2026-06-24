@@ -211,9 +211,10 @@ function AdminUsersPage() {
 
       <Card className="overflow-hidden p-0">
         <div className="hidden grid-cols-12 gap-3 border-b border-border bg-secondary/40 px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:grid">
-          <div className="col-span-4">User</div>
+          <div className="col-span-3">User</div>
           <div className="col-span-2">Joined</div>
-          <div className="col-span-2">Current role</div>
+          <div className="col-span-2">Activity</div>
+          <div className="col-span-1">Role</div>
           <div className="col-span-4 text-right">Actions</div>
         </div>
         <div className="divide-y divide-border">
@@ -228,7 +229,7 @@ function AdminUsersPage() {
               key={u.id}
               className="grid grid-cols-1 items-center gap-3 px-4 py-3 text-sm sm:grid-cols-12"
             >
-              <div className="flex min-w-0 items-center gap-2.5 sm:col-span-4">
+              <div className="flex min-w-0 items-center gap-2.5 sm:col-span-3">
                 <AvatarDisplay
                   userId={u.id}
                   name={u.display_name}
@@ -244,7 +245,24 @@ function AdminUsersPage() {
               <div className="text-xs text-muted-foreground sm:col-span-2">
                 {formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}
               </div>
-              <div className="sm:col-span-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:col-span-2">
+                <Badge variant="outline" className="font-mono text-[10px] uppercase">
+                  {u.reports_total} rpt
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="border-success/30 bg-success/10 font-mono text-[10px] uppercase text-success"
+                >
+                  {u.reports_resolved} ✓
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="border-accent/30 bg-accent/10 font-mono text-[10px] uppercase text-accent"
+                >
+                  {u.points} pts
+                </Badge>
+              </div>
+              <div className="sm:col-span-1">
                 <Badge
                   variant="outline"
                   className={`font-mono text-[10px] uppercase ${
@@ -258,7 +276,7 @@ function AdminUsersPage() {
                   {u.role}
                 </Badge>
                 {u.id === me?.id && (
-                  <span className="ml-1.5 font-mono text-[10px] uppercase text-muted-foreground">(you)</span>
+                  <div className="mt-0.5 font-mono text-[10px] uppercase text-muted-foreground">(you)</div>
                 )}
               </div>
               <div className="flex flex-wrap justify-end gap-1 sm:col-span-4">
