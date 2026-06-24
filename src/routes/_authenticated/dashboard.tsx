@@ -29,7 +29,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthStore, useIsModerator } from "@/lib/auth-store";
+import { useAuthStore, useIsAdmin, useIsModerator } from "@/lib/auth-store";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDistanceToNow, subDays, startOfDay, format } from "date-fns";
 
