@@ -38,7 +38,7 @@ function RewardsPage() {
   const user = useAuthStore((s) => s.user);
   const qc = useQueryClient();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["rewards-profile", user?.id],
     queryFn: async () => {
       if (!user) return null;
