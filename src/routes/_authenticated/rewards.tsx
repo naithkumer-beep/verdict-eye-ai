@@ -162,7 +162,7 @@ function RewardsPage() {
         <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Rewards</div>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Your reward history</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Earn +10 points for every report you submit and +50 when it's resolved.
+          Earn +30 points for every report you submit and +50 when it's resolved.
         </p>
       </div>
 
@@ -193,7 +193,7 @@ function RewardsPage() {
                 Reports submitted
               </div>
               <div className="mt-1 text-2xl font-semibold">{submitted}</div>
-              <div className="text-xs text-muted-foreground">+{submitted * 10} pts earned</div>
+              <div className="text-xs text-muted-foreground">+{submitted * 30} pts earned</div>
             </Card>
             <Card className="p-5">
               <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -267,7 +267,7 @@ function RewardsPage() {
         ) : filteredEvents.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Trophy className="mx-auto mb-3 h-6 w-6" />
-            {events.length === 0 ? "No rewards yet. Submit your first report to earn 10 points." : "No events match the current filters."}
+            {events.length === 0 ? "No rewards yet. Submit your first report to earn 30 points." : "No events match the current filters."}
             <div className="mt-4">
               {events.length === 0 ? (
                 <Button asChild size="sm">
