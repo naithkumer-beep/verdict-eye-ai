@@ -12,6 +12,10 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import { initI18n } from "@/lib/i18n";
+
+initI18n();
+
 
 function NotFoundComponent() {
   return (
