@@ -220,7 +220,7 @@ function RewardsPage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="rw-rid" className="text-xs">Report ID</Label>
-            <Input id="rw-rid" placeholder="Filter by report id" value={reportId} onChange={(e) => setReportId(e.target.value)} />
+            <Input id="rw-rid" placeholder="e.g. RPT-000001" value={reportId} onChange={(e) => setReportId(e.target.value)} />
           </div>
           <div className="flex gap-2">
             {hasFilters && (
