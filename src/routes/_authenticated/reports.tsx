@@ -1,0 +1,6 @@
+// Reports layout — provides Outlet for /reports and /reports/:id
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/_authenticated/reports")({
+  component: () => <Outlet />,
+});

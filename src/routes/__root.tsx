@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -77,19 +78,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "CIAP — AI Change Impact Analysis Platform" },
+      {
+        name: "description",
+        content:
+          "Enterprise-grade civic reporting platform with multi-stage AI image validation. Detect issues, validate evidence, and analyze impact with auditable confidence scores.",
+      },
+      { property: "og:title", content: "CIAP — AI Change Impact Analysis" },
+      {
+        property: "og:description",
+        content:
+          "Multi-stage AI validation pipeline: technical checks, quality scoring, relevance detection, duplicate detection, and cross-model verification before any analysis runs.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap",
       },
     ],
   }),
@@ -113,13 +121,41 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { Toaster } from "sonner";
+import { useAuthStore } from "@/lib/auth-store";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const init = useAuthStore((s) => s.init);
+  const router = useRouter();
+
+  useEffect(() => {
+    void init();
+  }, [init]);
+
+  useEffect(() => {
+    // Theme bootstrap
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("ciap-theme");
+    const isDark =
+      saved === "dark" ||
+      (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );
 }
