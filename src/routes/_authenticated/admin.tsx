@@ -64,7 +64,7 @@ function AdminPage() {
   if (!isModerator) return null;
 
   const changeStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("reports").update({ status }).eq("id", id);
+    const { error } = await supabase.from("reports").update({ status: status as never }).eq("id", id);
     if (error) {
       toast.error(error.message);
       return;
