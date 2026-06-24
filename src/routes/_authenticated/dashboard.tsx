@@ -29,7 +29,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthStore } from "@/lib/auth-store";
+import { useAuthStore, useIsModerator } from "@/lib/auth-store";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDistanceToNow, subDays, startOfDay, format } from "date-fns";
 
@@ -40,6 +40,18 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const role = useAuthStore((s) => s.role);
+  const initialized = useAuthStore((s) => s.initialized);
+  const isModerator = useIsModerator();
+  const navigate = useNavigate();
+
+  // Dashboard is an admin/moderator surface only.
+  useEffect(() => {
+    if (initialized && role !== null && !isModerator) {
+      navigate({ to: "/reports", replace: true });
+    }
+  }, [initialized, role, isModerator, navigate]);
+  if (initialized && role !== null && !isModerator) return null;
 
   const { data: reports } = useQuery({
     queryKey: ["dashboard-reports", user?.id],
