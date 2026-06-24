@@ -445,37 +445,60 @@ function NewReport() {
 
           <div>
             <Label>Evidence image</Label>
-            <label className="mt-1.5 block cursor-pointer">
-              <div
-                className={cn(
-                  "relative grid place-items-center rounded-lg border-2 border-dashed border-border bg-secondary/30 px-4 py-8 transition-colors hover:border-accent/50",
-                  previewUrl && "border-solid p-0",
-                )}
-              >
-                {previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="max-h-72 w-full rounded-lg object-contain"
-                  />
-                ) : (
-                  <div className="text-center">
-                    <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
-                    <div className="mt-2 text-sm font-medium">Click to upload</div>
-                    <div className="text-xs text-muted-foreground">
-                      JPEG, PNG, WebP • up to 8 MB • min 480×480
+            <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
+              <label className="block cursor-pointer">
+                <div
+                  className={cn(
+                    "relative grid place-items-center rounded-lg border-2 border-dashed border-border bg-secondary/30 px-4 py-8 transition-colors hover:border-accent/50",
+                    previewUrl && "border-solid p-0 sm:col-span-2",
+                  )}
+                >
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="max-h-72 w-full rounded-lg object-contain"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
+                      <div className="mt-2 text-sm font-medium">Upload from device</div>
+                      <div className="text-xs text-muted-foreground">
+                        JPEG, PNG, WebP • up to 8 MB
+                      </div>
                     </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                  />
+                </div>
+              </label>
+              {!previewUrl && (
+                <label className="block cursor-pointer">
+                  <div className="relative grid place-items-center rounded-lg border-2 border-dashed border-border bg-secondary/30 px-4 py-8 transition-colors hover:border-accent/50">
+                    <div className="text-center">
+                      <ImageIcon className="mx-auto h-6 w-6 text-muted-foreground" />
+                      <div className="mt-2 text-sm font-medium">Take a photo</div>
+                      <div className="text-xs text-muted-foreground">
+                        Use your camera (mobile)
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="sr-only"
+                      onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                    />
                   </div>
-                )}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="sr-only"
-                  onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-                />
-              </div>
-            </label>
+                </label>
+              )}
+            </div>
           </div>
+
 
           <Button
             onClick={runPipeline}

@@ -141,9 +141,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="hidden lg:block">{Sidebar}</div>
 
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-[1200] lg:hidden">
           <div className="absolute inset-0 bg-foreground/40" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0">{Sidebar}</div>
+          <div className="absolute inset-y-0 left-0 h-full">{Sidebar}</div>
         </div>
       )}
 

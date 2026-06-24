@@ -211,3 +211,12 @@
   /* Mono numeric for stats */
   .tabular-nums { font-variant-numeric: tabular-nums; }
 }
+
+/* Leaflet map: contain stacking context so map tiles/controls don't
+   leak above the mobile sidebar overlay. */
+.leaflet-container {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+}
+
