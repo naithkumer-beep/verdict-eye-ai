@@ -76,9 +76,10 @@ function MapPage() {
       </div>
 
       <Card className="overflow-hidden p-0">
-        <ClientOnly fallback={<div className="h-[560px] grid place-items-center text-sm text-muted-foreground">Loading map…</div>}>
-          {() => <YangonMap markers={markers} height="560px" zoom={12} />}
+        <ClientOnly fallback={<div className="grid h-[560px] place-items-center text-sm text-muted-foreground">Loading map…</div>}>
+          <YangonMap markers={markers} height="560px" zoom={12} />
         </ClientOnly>
+
       </Card>
 
       <Card className="p-5">
