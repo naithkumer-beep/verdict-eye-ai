@@ -2,7 +2,7 @@
 import { createFileRoute, useNavigate, ClientOnly } from "@tanstack/react-router";
 import { YangonMap } from "@/components/yangon-map";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
