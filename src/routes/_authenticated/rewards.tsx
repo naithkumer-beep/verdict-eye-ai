@@ -193,7 +193,7 @@ function RewardsPage() {
                 Reports submitted
               </div>
               <div className="mt-1 text-2xl font-semibold">{submitted}</div>
-              <div className="text-xs text-muted-foreground">+{submitted * 10} pts earned</div>
+              <div className="text-xs text-muted-foreground">+{submitted * 30} pts earned</div>
             </Card>
             <Card className="p-5">
               <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
