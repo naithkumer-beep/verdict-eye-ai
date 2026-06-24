@@ -141,6 +141,11 @@ function ReportDetail() {
                   {report.severity}
                 </Badge>
               )}
+              {(isOwner || isAdmin) && (report as any).report_code && (
+                <Badge variant="secondary" className="font-mono text-[10px] uppercase">
+                  {(report as any).report_code}
+                </Badge>
+              )}
             </div>
             <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
               {report.title}
