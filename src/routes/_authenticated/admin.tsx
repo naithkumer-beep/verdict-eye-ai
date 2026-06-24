@@ -133,7 +133,31 @@ function AdminPage() {
     enabled: isModerator,
   });
 
+  const { data: costs = [] } = useQuery({
+    queryKey: ["admin-costs"],
+    queryFn: async () => {
+      const { data } = await supabase.from("cost_estimates").select("*");
+      return (data ?? []) as Array<{ category: string; estimated_cost_mmk: number }>;
+    },
+    enabled: isModerator,
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: prediction } = useQuery({
+    queryKey: ["admin-prediction"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ai_predictions")
+        .select("*")
+        .eq("kind", "command_center")
+        .maybeSingle();
+      return data;
+    },
+    enabled: isModerator,
+  });
+
   if (!isModerator) return null;
+
 
   const audit = async (
     action: string,
