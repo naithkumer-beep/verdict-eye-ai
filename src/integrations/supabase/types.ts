@@ -241,6 +241,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          points: number
           updated_at: string
         }
         Insert: {
@@ -250,6 +251,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          points?: number
           updated_at?: string
         }
         Update: {
@@ -259,6 +261,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          points?: number
           updated_at?: string
         }
         Relationships: []
@@ -534,6 +537,41 @@ export type Database = {
           },
         ]
       }
+      reward_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          points: number
+          report_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          points: number
+          report_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          points?: number
+          report_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_events_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -622,6 +660,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_points: {
+        Args: {
+          _kind: string
+          _points: number
+          _report_id: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
