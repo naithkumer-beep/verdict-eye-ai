@@ -88,7 +88,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "AI-powered civic issue reporting platform for Yangon, Myanmar. Report road damage, garbage, broken street lights, drainage, and more — every image passes a 6-stage AI validation pipeline.",
       },
-      { property: "og:title", content: "CivicLens AI — Yangon" },
+      { property: "og:title", content: "CivicLens AI — Yangon Civic Reporting" },
       {
         property: "og:description",
         content:
@@ -97,6 +97,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
 
+      { name: "twitter:title", content: "CivicLens AI — Yangon Civic Reporting" },
+      { name: "description", content: "AI-powered platform for analyzing changes from uploaded images, ensuring relevance and accuracy." },
+      { property: "og:description", content: "AI-powered platform for analyzing changes from uploaded images, ensuring relevance and accuracy." },
+      { name: "twitter:description", content: "AI-powered platform for analyzing changes from uploaded images, ensuring relevance and accuracy." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e6d9d11f-8f48-4c2c-9a5a-d977c0ec5c8f/id-preview-de72b35f--255a4590-e20f-48df-9ce3-e16720bc47ca.lovable.app-1782312681165.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e6d9d11f-8f48-4c2c-9a5a-d977c0ec5c8f/id-preview-de72b35f--255a4590-e20f-48df-9ce3-e16720bc47ca.lovable.app-1782312681165.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
