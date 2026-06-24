@@ -201,6 +201,9 @@ function NewReport() {
             category,
             department: department.trim() || null,
             location: location.trim() || null,
+            latitude: coords?.[0] ?? null,
+            longitude: coords?.[1] ?? null,
+
             status: "analyzing",
             verification_status: "verified",
             severity: a.severity,
