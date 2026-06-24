@@ -11,7 +11,6 @@ export interface TechnicalCheck {
 
 const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB
-const MAX_DIM = 8000;
 
 export async function technicalValidate(file: File): Promise<TechnicalCheck> {
   if (!ACCEPTED_MIME.includes(file.type)) {
@@ -24,7 +23,8 @@ export async function technicalValidate(file: File): Promise<TechnicalCheck> {
     return { ok: false, reason: "File suspiciously small or corrupt." };
   }
 
-  // Probe dimensions and corruption by decoding
+  // Probe corruption by decoding. Resolution is intentionally NOT validated —
+  // any decodable image is accepted regardless of pixel dimensions.
   const dims = await new Promise<{ w: number; h: number } | null>((resolve) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
@@ -40,12 +40,10 @@ export async function technicalValidate(file: File): Promise<TechnicalCheck> {
   });
 
   if (!dims) return { ok: false, reason: "Image is corrupted or unreadable." };
-  if (dims.w > MAX_DIM || dims.h > MAX_DIM) {
-    return { ok: false, reason: "Image dimensions exceed maximum." };
-  }
 
   return { ok: true, width: dims.w, height: dims.h, size: file.size, mime: file.type };
 }
+
 
 // Simple 16x16 average-hash (aHash) — fast and good enough for near-duplicate
 // detection at the server level. Returns 64-char hex.

@@ -79,8 +79,10 @@ population estimate (integer), and 1-3 line risk description.
 PASS 5 — CONSISTENCY CHECK: are passes 1-4 internally consistent? If they
 disagree significantly, lower confidence to <60.
 
-QUALITY checks: blur, darkness, overexposure, low resolution, obstruction,
-extreme crop. Each one detected drops quality score by 20.
+QUALITY checks: blur, darkness, overexposure, obstruction, extreme crop,
+visible AI-generation/manipulation artifacts. Each issue detected drops
+quality score by 20. DO NOT consider image resolution, pixel count, or
+file dimensions — those are not quality signals here.
 
 Return STRICT JSON with this exact shape and nothing else:
 {
@@ -93,8 +95,9 @@ Return STRICT JSON with this exact shape and nothing else:
   },
   "quality": {
     "score": 0-100,
-    "issues": ["blur"|"dark"|"overexposed"|"low_resolution"|"obstruction"|"extreme_crop"]
+    "issues": ["blur"|"dark"|"overexposed"|"obstruction"|"extreme_crop"|"manipulated"]
   },
+
   "relevance": {
     "score": 0-100,
     "reason": "..."

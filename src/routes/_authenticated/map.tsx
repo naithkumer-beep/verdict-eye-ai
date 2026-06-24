@@ -79,25 +79,27 @@ function MapPage() {
       href: `/reports/${r.id}`,
     }));
 
+  const statusLabels: Record<string, string> = {
+    pending: t("reports.statusPending"),
+    analyzing: t("reports.statusAnalyzing"),
+    verified: t("reports.statusVerified"),
+    resolved: t("reports.statusResolved"),
+    rejected: t("reports.statusRejected"),
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            Live map
+            {t("reports.liveMap")}
           </div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
             {t("nav.map")} — Yangon
           </h1>
         </div>
         <div className="flex flex-wrap gap-1.5 text-xs">
-          {Object.entries({
-            pending: "Pending",
-            analyzing: "Analyzing",
-            verified: "Verified",
-            resolved: "Resolved",
-            rejected: "Rejected",
-          }).map(([k, label]) => (
+          {Object.entries(statusLabels).map(([k, label]) => (
             <Badge key={k} variant="outline" className={`font-mono text-[10px] uppercase ${STATUS_COLORS[k]}`}>
               {label}
             </Badge>
@@ -109,10 +111,10 @@ function MapPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="h-8 w-[220px] text-sm">
-              <SelectValue placeholder="All categories" />
+              <SelectValue placeholder={t("reports.allCategories")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">{t("reports.allCategories")}</SelectItem>
               {REPORT_CATEGORIES.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
                   {c.label}
@@ -122,32 +124,30 @@ function MapPage() {
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="h-8 w-[160px] text-sm">
-              <SelectValue placeholder="All statuses" />
+              <SelectValue placeholder={t("reports.allStatuses")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="analyzing">Analyzing</SelectItem>
-              <SelectItem value="verified">Verified</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="all">{t("reports.allStatuses")}</SelectItem>
+              {Object.entries(statusLabels).map(([k, label]) => (
+                <SelectItem key={k} value={k}>{label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <span className="ml-auto font-mono text-[11px] uppercase text-muted-foreground">
-            Showing {localNum(markers.length)} of {localNum(reports.length)}
+            {t("reports.showing")} {localNum(markers.length)} {t("reports.of")} {localNum(reports.length)}
           </span>
         </div>
       </Card>
 
       <Card className="overflow-hidden p-0">
-        <ClientOnly fallback={<div className="grid h-[560px] place-items-center text-sm text-muted-foreground">Loading map…</div>}>
+        <ClientOnly fallback={<div className="grid h-[560px] place-items-center text-sm text-muted-foreground">{t("reports.loadingMap")}</div>}>
           <YangonMap markers={markers} height="560px" zoom={12} />
         </ClientOnly>
       </Card>
 
       <Card className="p-5">
         <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-          <MapPin className="h-4 w-4" /> Reports on map ({localNum(markers.length)})
+          <MapPin className="h-4 w-4" /> {t("reports.reportsOnMap")} ({localNum(markers.length)})
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.slice(0, 24).map((r) => (
@@ -163,7 +163,7 @@ function MapPage() {
                   variant="outline"
                   className={`shrink-0 font-mono text-[9px] uppercase ${STATUS_COLORS[r.status ?? ""]}`}
                 >
-                  {r.status}
+                  {statusLabels[r.status ?? ""] ?? r.status}
                 </Badge>
               </div>
               <div className="mt-1 truncate text-[11px] text-muted-foreground">
@@ -176,4 +176,5 @@ function MapPage() {
     </div>
   );
 }
+
 
