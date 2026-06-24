@@ -286,7 +286,12 @@ function RewardsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">{meta.label}</div>
-                    <div className="truncate text-xs text-muted-foreground">{meta.reason}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {meta.reason}
+                      {e.report_id && reportCodeMap[e.report_id] && (
+                        <span className="ml-1 font-mono text-[10px] uppercase text-foreground/70">· {reportCodeMap[e.report_id]}</span>
+                      )}
+                    </div>
                     <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                       {format(new Date(e.created_at), "MMM d, yyyy · HH:mm")} ·{" "}
                       {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
