@@ -1,11 +1,14 @@
 // Reward History — points balance + full reward_events ledger with real-time updates.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { Trophy, Sparkles, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Trophy, Sparkles, CheckCircle2, ArrowUpRight, Download, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { format, formatDistanceToNow } from "date-fns";
@@ -80,6 +83,48 @@ function RewardsPage() {
   const submitted = events.filter((e) => e.kind === "report_created").length;
   const resolved = events.filter((e) => e.kind === "report_resolved").length;
 
+  // Filters
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [kind, setKind] = useState<string>("all");
+  const [reportId, setReportId] = useState("");
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((e) => {
+      if (kind !== "all" && e.kind !== kind) return false;
+      if (reportId.trim() && !(e.report_id ?? "").toLowerCase().includes(reportId.trim().toLowerCase())) return false;
+      const t = new Date(e.created_at).getTime();
+      if (fromDate && t < new Date(fromDate).getTime()) return false;
+      if (toDate && t > new Date(toDate).getTime() + 86_399_999) return false;
+      return true;
+    });
+  }, [events, kind, reportId, fromDate, toDate]);
+
+  const hasFilters = !!(fromDate || toDate || reportId || kind !== "all");
+  const clearFilters = () => { setFromDate(""); setToDate(""); setKind("all"); setReportId(""); };
+
+  const exportCsv = () => {
+    const rows = [
+      ["created_at", "kind", "points", "report_id", "reason"],
+      ...filteredEvents.map((e) => [
+        new Date(e.created_at).toISOString(),
+        e.kind,
+        String(e.points),
+        e.report_id ?? "",
+        (KIND_META[e.kind]?.reason ?? "Reward earned.").replace(/"/g, '""'),
+      ]),
+    ];
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `reward-history-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+
   return (
     <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div>
@@ -120,24 +165,68 @@ function RewardsPage() {
         </Card>
       </div>
 
+      <Card className="p-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+          <div className="space-y-1.5">
+            <Label htmlFor="rw-from" className="text-xs">From</Label>
+            <Input id="rw-from" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rw-to" className="text-xs">To</Label>
+            <Input id="rw-to" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Kind</Label>
+            <Select value={kind} onValueChange={setKind}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All kinds</SelectItem>
+                <SelectItem value="report_created">Report submitted</SelectItem>
+                <SelectItem value="report_resolved">Report resolved</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rw-rid" className="text-xs">Report ID</Label>
+            <Input id="rw-rid" placeholder="Filter by report id" value={reportId} onChange={(e) => setReportId(e.target.value)} />
+          </div>
+          <div className="flex gap-2">
+            {hasFilters && (
+              <Button variant="outline" size="sm" onClick={clearFilters} className="flex-1">
+                <X className="mr-1 h-3.5 w-3.5" /> Clear
+              </Button>
+            )}
+            <Button size="sm" onClick={exportCsv} disabled={filteredEvents.length === 0} className="flex-1">
+              <Download className="mr-1 h-3.5 w-3.5" /> Export CSV
+            </Button>
+          </div>
+        </div>
+      </Card>
+
       <Card className="overflow-hidden p-0">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="text-sm font-medium">Activity ledger</div>
-          <Badge variant="outline" className="font-mono text-[10px]">{events.length} events</Badge>
+          <Badge variant="outline" className="font-mono text-[10px]">
+            {filteredEvents.length}{hasFilters ? ` of ${events.length}` : ""} events
+          </Badge>
         </div>
-        {events.length === 0 ? (
+        {filteredEvents.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Trophy className="mx-auto mb-3 h-6 w-6" />
-            No rewards yet. Submit your first report to earn 10 points.
+            {events.length === 0 ? "No rewards yet. Submit your first report to earn 10 points." : "No events match the current filters."}
             <div className="mt-4">
-              <Button asChild size="sm">
-                <Link to="/reports/new">Submit a report <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
-              </Button>
+              {events.length === 0 ? (
+                <Button asChild size="sm">
+                  <Link to="/reports/new">Submit a report <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={clearFilters}>Clear filters</Button>
+              )}
             </div>
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {events.map((e) => {
+            {filteredEvents.map((e) => {
               const meta = KIND_META[e.kind] ?? {
                 label: e.kind,
                 icon: Sparkles,
