@@ -42,6 +42,7 @@ import { useAuthStore, useIsAdmin, useIsModerator } from "@/lib/auth-store";
 import { getCategoryLabel, PRIORITIES, type PriorityValue } from "@/lib/categories";
 import { formatDistanceToNow, isPast } from "date-fns";
 import { toast } from "sonner";
+import { sendTransactionalEmail } from "@/lib/email/send";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin Panel — CivicLens AI" }] }),
@@ -142,7 +143,7 @@ function AdminPage() {
   const changeStatus = async (id: string, status: string) => {
     const { data: prev } = await supabase
       .from("reports")
-      .select("status,title")
+      .select("status,title,user_id")
       .eq("id", id)
       .maybeSingle();
     const { error } = await supabase
@@ -153,6 +154,35 @@ function AdminPage() {
     await audit("report.status_change", id, { title: prev?.title, from: prev?.status, to: status });
     toast.success(`Status → ${status}`);
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
+
+    // Email the reporter when their report is resolved
+    if (status === "resolved" && prev?.status !== "resolved" && prev?.user_id) {
+      try {
+        const [{ data: emailRow }, { data: profile }] = await Promise.all([
+          (supabase as any).rpc("get_profile_email", { _user_id: prev.user_id }),
+          supabase.from("profiles").select("display_name,points").eq("id", prev.user_id).maybeSingle(),
+        ]);
+        const recipient = typeof emailRow === "string" ? emailRow : null;
+        if (recipient) {
+          await sendTransactionalEmail({
+            templateName: "report-resolved",
+            recipientEmail: recipient,
+            idempotencyKey: `report-resolved-${id}`,
+            templateData: {
+              recipientName: profile?.display_name ?? undefined,
+              reportTitle: prev?.title ?? "Your report",
+              reportId: id,
+              pointsEarned: 50,
+              totalPoints: (profile?.points as number | undefined) ?? undefined,
+            },
+          });
+          toast.success("Resolution email sent");
+        }
+      } catch (e) {
+        console.error("Failed to send resolution email", e);
+        toast.error("Could not send resolution email");
+      }
+    }
   };
 
   const changePriority = async (id: string, priority: PriorityValue) => {
