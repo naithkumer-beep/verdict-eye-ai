@@ -2,7 +2,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { ShieldCheck, Trash2, Users, Building2 } from "lucide-react";
+import { ShieldCheck, Trash2, Users, Building2, ScrollText } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,10 +64,21 @@ function AdminPage() {
   if (!isModerator) return null;
 
   const changeStatus = async (id: string, status: string) => {
+    const { data: prev } = await supabase.from("reports").select("status,title").eq("id", id).maybeSingle();
     const { error } = await supabase.from("reports").update({ status: status as never }).eq("id", id);
     if (error) {
       toast.error(error.message);
       return;
+    }
+    const uid = (await supabase.auth.getUser()).data.user?.id;
+    if (uid) {
+      await supabase.from("audit_logs").insert({
+        user_id: uid,
+        action: "report.status_change",
+        entity_type: "report",
+        entity_id: id,
+        details: { title: prev?.title, from: prev?.status, to: status },
+      });
     }
     toast.success(`Status updated to ${status}`);
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
@@ -79,6 +90,16 @@ function AdminPage() {
     if (error) {
       toast.error(error.message);
       return;
+    }
+    const uid = (await supabase.auth.getUser()).data.user?.id;
+    if (uid) {
+      await supabase.from("audit_logs").insert({
+        user_id: uid,
+        action: "report.delete",
+        entity_type: "report",
+        entity_id: id,
+        details: { title },
+      });
     }
     toast.success("Report deleted");
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
@@ -97,11 +118,18 @@ function AdminPage() {
           </div>
         </div>
         {isAdmin && (
-          <Button asChild variant="outline" size="sm">
-            <Link to="/admin/users">
-              <Users className="mr-1.5 h-3.5 w-3.5" /> User management
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/admin/users">
+                <Users className="mr-1.5 h-3.5 w-3.5" /> User management
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/admin/audit">
+                <ScrollText className="mr-1.5 h-3.5 w-3.5" /> Audit log
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
 
