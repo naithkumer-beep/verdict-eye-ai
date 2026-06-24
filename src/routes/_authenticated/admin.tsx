@@ -188,6 +188,20 @@ function AdminPage() {
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
+  const escalate = () => {
+    toast.promise(
+      escalateFn({ data: undefined } as never).then((r: any) => {
+        qc.invalidateQueries({ queryKey: ["admin-reports"] });
+        return r;
+      }),
+      {
+        loading: "Running escalation…",
+        success: (r: any) => `Escalated ${r?.escalated ?? 0} report(s)`,
+        error: "Escalation failed",
+      },
+    );
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -195,18 +209,30 @@ function AdminPage() {
           <ShieldCheck className="h-5 w-5 text-accent" />
           <div>
             <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-              Admin
+              Admin Panel
             </div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Operations queue
+              Operations &amp; management
             </h1>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Manage reports, users, and audits. For executive KPIs &amp; AI insights, open the{" "}
+              <Link to="/admin/command" className="underline">Command Center</Link>.
+            </p>
           </div>
         </div>
         {isAdmin && (
           <div className="flex flex-wrap gap-2">
+            <Button asChild variant="default" size="sm">
+              <Link to="/admin/command">
+                <Gauge className="mr-1.5 h-3.5 w-3.5" /> Command Center
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={escalate}>
+              <Zap className="mr-1.5 h-3.5 w-3.5" /> Run escalation
+            </Button>
             <Button asChild variant="outline" size="sm">
               <Link to="/admin/users">
-                <Users className="mr-1.5 h-3.5 w-3.5" /> User management
+                <Users className="mr-1.5 h-3.5 w-3.5" /> Users
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
@@ -217,6 +243,7 @@ function AdminPage() {
           </div>
         )}
       </div>
+
 
       <Card className="overflow-hidden p-0">
         <div className="divide-y divide-border">
