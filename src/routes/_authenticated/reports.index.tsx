@@ -19,7 +19,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { REPORT_CATEGORIES, getCategoryLabel } from "@/lib/categories";
 import { formatDistanceToNow } from "date-fns";
 
-export const Route = createFileRoute("/_authenticated/reports")({
+export const Route = createFileRoute("/_authenticated/reports/")({
   head: () => ({ meta: [{ title: "Reports — CIAP" }] }),
   component: ReportsList,
 });
