@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import { template as roleChangedTemplate } from './role-changed'
+import { template as reportResolvedTemplate } from './report-resolved'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -12,4 +13,5 @@ export interface TemplateEntry {
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'role-changed': roleChangedTemplate,
+  'report-resolved': reportResolvedTemplate,
 }
