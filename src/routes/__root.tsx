@@ -78,20 +78,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CIAP — AI Change Impact Analysis Platform" },
+      { title: "CivicLens AI — Yangon Civic Reporting" },
       {
         name: "description",
         content:
-          "Enterprise-grade civic reporting platform with multi-stage AI image validation. Detect issues, validate evidence, and analyze impact with auditable confidence scores.",
+          "AI-powered civic issue reporting platform for Yangon, Myanmar. Report road damage, garbage, broken street lights, drainage, and more — every image passes a 6-stage AI validation pipeline.",
       },
-      { property: "og:title", content: "CIAP — AI Change Impact Analysis" },
+      { property: "og:title", content: "CivicLens AI — Yangon" },
       {
         property: "og:description",
         content:
-          "Multi-stage AI validation pipeline: technical checks, quality scoring, relevance detection, duplicate detection, and cross-model verification before any analysis runs.",
+          "Built for Yangon. Bilingual (English / မြန်မာ). Live city map, real-time notifications, AI-validated evidence, and emergency call directory.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+
     ],
     links: [
       { rel: "stylesheet", href: appCss },
