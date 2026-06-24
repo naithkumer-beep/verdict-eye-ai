@@ -50,6 +50,30 @@ export type Database = {
         }
         Relationships: []
       }
+      departments: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name_en: string
+          name_my: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name_en: string
+          name_my: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name_en?: string
+          name_my?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -238,6 +262,41 @@ export type Database = {
           },
         ]
       }
+      report_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          report_id: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_feedback_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_images: {
         Row: {
           ai_analysis: Json | null
@@ -340,18 +399,22 @@ export type Database = {
           category: Database["public"]["Enums"]["report_category"]
           confidence_score: number | null
           created_at: string
+          deadline_at: string | null
           deleted_at: string | null
           department: string | null
+          department_id: string | null
           description: string
           id: string
           impact_score: number | null
           latitude: number | null
           location: string | null
           longitude: number | null
+          priority: Database["public"]["Enums"]["report_priority"] | null
           priority_score: number | null
           quality_score: number | null
           recommended_actions: Json | null
           relevance_score: number | null
+          resolved_at: string | null
           risk_level: string | null
           severity: Database["public"]["Enums"]["severity_level"] | null
           status: Database["public"]["Enums"]["report_status"]
@@ -359,6 +422,7 @@ export type Database = {
           updated_at: string
           user_id: string
           verification_status: Database["public"]["Enums"]["verification_status"]
+          work_order_no: string | null
         }
         Insert: {
           affected_population?: number | null
@@ -367,18 +431,22 @@ export type Database = {
           category: Database["public"]["Enums"]["report_category"]
           confidence_score?: number | null
           created_at?: string
+          deadline_at?: string | null
           deleted_at?: string | null
           department?: string | null
+          department_id?: string | null
           description: string
           id?: string
           impact_score?: number | null
           latitude?: number | null
           location?: string | null
           longitude?: number | null
+          priority?: Database["public"]["Enums"]["report_priority"] | null
           priority_score?: number | null
           quality_score?: number | null
           recommended_actions?: Json | null
           relevance_score?: number | null
+          resolved_at?: string | null
           risk_level?: string | null
           severity?: Database["public"]["Enums"]["severity_level"] | null
           status?: Database["public"]["Enums"]["report_status"]
@@ -386,6 +454,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           verification_status?: Database["public"]["Enums"]["verification_status"]
+          work_order_no?: string | null
         }
         Update: {
           affected_population?: number | null
@@ -394,18 +463,22 @@ export type Database = {
           category?: Database["public"]["Enums"]["report_category"]
           confidence_score?: number | null
           created_at?: string
+          deadline_at?: string | null
           deleted_at?: string | null
           department?: string | null
+          department_id?: string | null
           description?: string
           id?: string
           impact_score?: number | null
           latitude?: number | null
           location?: string | null
           longitude?: number | null
+          priority?: Database["public"]["Enums"]["report_priority"] | null
           priority_score?: number | null
           quality_score?: number | null
           recommended_actions?: Json | null
           relevance_score?: number | null
+          resolved_at?: string | null
           risk_level?: string | null
           severity?: Database["public"]["Enums"]["severity_level"] | null
           status?: Database["public"]["Enums"]["report_status"]
@@ -413,8 +486,17 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verification_status?: Database["public"]["Enums"]["verification_status"]
+          work_order_no?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reports_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {
@@ -461,6 +543,44 @@ export type Database = {
         }
         Relationships: []
       }
+      work_order_activity: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          metadata: Json
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          metadata?: Json
+          report_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          metadata?: Json
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_activity_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -502,6 +622,13 @@ export type Database = {
           read_ct: number
         }[]
       }
+      sla_deadline: {
+        Args: {
+          base: string
+          p: Database["public"]["Enums"]["report_priority"]
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "user" | "moderator" | "admin"
@@ -513,6 +640,7 @@ export type Database = {
         | "public_safety"
         | "vandalism"
         | "building_hazard"
+      report_priority: "critical" | "high" | "medium" | "low"
       report_status:
         | "pending"
         | "analyzing"
@@ -658,6 +786,7 @@ export const Constants = {
         "vandalism",
         "building_hazard",
       ],
+      report_priority: ["critical", "high", "medium", "low"],
       report_status: [
         "pending",
         "analyzing",
