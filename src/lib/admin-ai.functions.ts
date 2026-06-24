@@ -107,15 +107,17 @@ export const listAdminUsers = createServerFn({ method: "GET" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: profiles, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
+    const [{ data: profiles, error: pErr }, { data: roles, error: rErr }, { data: reports, error: repErr }] = await Promise.all([
       supabaseAdmin
         .from("profiles")
-        .select("id,email,display_name,avatar_url,created_at")
+        .select("id,email,display_name,avatar_url,created_at,points")
         .order("created_at", { ascending: false }),
       supabaseAdmin.from("user_roles").select("user_id,role"),
+      supabaseAdmin.from("reports").select("user_id,status"),
     ]);
     if (pErr) throw pErr;
     if (rErr) throw rErr;
+    if (repErr) throw repErr;
 
     type Role = "user" | "moderator" | "admin";
     const rank = (x: Role) => (x === "admin" ? 3 : x === "moderator" ? 2 : 1);
@@ -126,14 +128,29 @@ export const listAdminUsers = createServerFn({ method: "GET" })
       if (!cur || rank(next) > rank(cur)) roleByUser.set(r.user_id, next);
     }
 
-    return (profiles ?? []).map((p) => ({
-      id: p.id as string,
-      email: (p.email as string | null) ?? null,
-      display_name: (p.display_name as string | null) ?? null,
-      avatar_url: (p.avatar_url as string | null) ?? null,
-      created_at: p.created_at as string,
-      role: roleByUser.get(p.id as string) ?? ("user" as Role),
-    }));
+    const stats = new Map<string, { total: number; resolved: number }>();
+    for (const r of reports ?? []) {
+      if (!r.user_id) continue;
+      const s = stats.get(r.user_id) ?? { total: 0, resolved: 0 };
+      s.total += 1;
+      if (r.status === "resolved") s.resolved += 1;
+      stats.set(r.user_id, s);
+    }
+
+    return (profiles ?? []).map((p) => {
+      const s = stats.get(p.id as string) ?? { total: 0, resolved: 0 };
+      return {
+        id: p.id as string,
+        email: (p.email as string | null) ?? null,
+        display_name: (p.display_name as string | null) ?? null,
+        avatar_url: (p.avatar_url as string | null) ?? null,
+        created_at: p.created_at as string,
+        role: roleByUser.get(p.id as string) ?? ("user" as Role),
+        points: (p.points as number | null) ?? 0,
+        reports_total: s.total,
+        reports_resolved: s.resolved,
+      };
+    });
   });
 
 // AI auto role suggestion — analyses a user's report history and recommends a role.
