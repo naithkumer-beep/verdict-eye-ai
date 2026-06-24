@@ -267,7 +267,7 @@ function RewardsPage() {
         ) : filteredEvents.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Trophy className="mx-auto mb-3 h-6 w-6" />
-            {events.length === 0 ? "No rewards yet. Submit your first report to earn 10 points." : "No events match the current filters."}
+            {events.length === 0 ? "No rewards yet. Submit your first report to earn 30 points." : "No events match the current filters."}
             <div className="mt-4">
               {events.length === 0 ? (
                 <Button asChild size="sm">
