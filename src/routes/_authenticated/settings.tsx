@@ -66,11 +66,11 @@ function SettingsPage() {
   const onPickAvatar = async (file: File | null) => {
     if (!file || !user) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast.error("Use JPEG, PNG, or WebP");
+      toast.error(t("settings.useImageType"));
       return;
     }
     if (file.size > 4 * 1024 * 1024) {
-      toast.error("Max 4 MB");
+      toast.error(t("settings.max4mb"));
       return;
     }
     setUploadingAvatar(true);
