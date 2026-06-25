@@ -120,6 +120,15 @@ function ReportsList() {
               className="h-8 pl-8 text-sm"
             />
           </div>
+          <Select value={scope} onValueChange={setScope}>
+            <SelectTrigger className="h-8 w-[130px] text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("reports.scopeAll", { defaultValue: "All reports" })}</SelectItem>
+              <SelectItem value="mine">{t("reports.scopeMine", { defaultValue: "My reports" })}</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className="h-8 w-[140px] text-sm">
               <SelectValue />
