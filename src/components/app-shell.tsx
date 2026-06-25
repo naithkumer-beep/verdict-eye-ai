@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             qc.invalidateQueries({ queryKey: ["rewards-profile"] });
             qc.invalidateQueries({ queryKey: ["reward-profile"] });
           }
-          sonnerToast(n.title ?? "Notification", { description: n.message });
+          sonnerToast(n.title ?? t("notifications.fallbackTitle"), { description: n.message });
         },
       )
       .on(
