@@ -31,8 +31,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin, useIsModerator } from "@/lib/auth-store";
-import { getCategoryLabel } from "@/lib/categories";
 import { formatDistanceToNow, subDays, startOfDay, format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { localNum, localRelative, localCategory } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — CIAP" }] }),
@@ -40,6 +41,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const role = useAuthStore((s) => s.role);
   const initialized = useAuthStore((s) => s.initialized);
@@ -98,7 +100,7 @@ function DashboardPage() {
         const d = new Date(r.created_at);
         return startOfDay(d).getTime() === day.getTime();
       }).length ?? 0;
-    return { date: format(day, "MMM d"), reports: count };
+    return { date: format(day, "MMM d"), reports: count, _count: count };
   });
 
   // Category breakdown
@@ -107,7 +109,7 @@ function DashboardPage() {
       acc[r.category] = (acc[r.category] ?? 0) + 1;
       return acc;
     }, {}),
-  ).map(([k, v]) => ({ category: getCategoryLabel(k), count: v }));
+  ).map(([k, v]) => ({ category: localCategory(k), count: v }));
 
   const avgConfidence =
     reports && reports.length
@@ -121,15 +123,15 @@ function DashboardPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            Overview
+            {t("dashboard.overview")}
           </div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Dashboard
+            {t("dashboard.title")}
           </h1>
         </div>
         <Button asChild>
           <Link to="/reports/new">
-            New report <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+            {t("reports.newReport")} <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
           </Link>
         </Button>
       </div>
@@ -142,16 +144,16 @@ function DashboardPage() {
             </div>
             <div>
               <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                Reward points
+                {t("dashboard.rewardPoints")}
               </div>
-              <div className="text-2xl font-semibold tracking-tight">{points}</div>
+              <div className="text-2xl font-semibold tracking-tight">{localNum(points)}</div>
               <div className="text-xs text-muted-foreground">
-                Earn +10 per report submitted, +50 when it's resolved.
+                {t("dashboard.earnHint")}
               </div>
             </div>
           </div>
           <Button asChild variant="outline" size="sm">
-            <Link to="/reports/new">Earn more <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+            <Link to="/reports/new">{t("dashboard.earnMore")} <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
           </Button>
         </Card>
       )}
@@ -159,26 +161,26 @@ function DashboardPage() {
       {/* Stat tiles */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Total reports"
+          label={t("dashboard.totalReports")}
           value={stats.total}
           icon={FileText}
           accent="text-foreground"
         />
         <StatCard
-          label="Pending review"
+          label={t("dashboard.pendingReview")}
           value={stats.pending}
           icon={Clock}
           accent="text-warning"
         />
         <StatCard
-          label="Verified"
+          label={t("dashboard.verified")}
           value={stats.verified}
           icon={CheckCircle2}
           accent="text-success"
           tint="bg-success/5 border-success/20"
         />
         <StatCard
-          label="Rejected"
+          label={t("dashboard.rejected")}
           value={stats.rejected}
           icon={XCircle}
           accent="text-destructive"
@@ -190,11 +192,11 @@ function DashboardPage() {
         <Card className="col-span-1 p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium">14-day trend</div>
-              <div className="text-xs text-muted-foreground">Daily report volume</div>
+              <div className="text-sm font-medium">{t("dashboard.trend14")}</div>
+              <div className="text-xs text-muted-foreground">{t("dashboard.dailyVolume")}</div>
             </div>
             <Badge variant="outline" className="font-mono text-[10px]">
-              <TrendingUp className="mr-1 h-3 w-3" /> Live
+              <TrendingUp className="mr-1 h-3 w-3" /> {t("dashboard.live")}
             </Badge>
           </div>
           <div className="h-56 w-full">
@@ -243,23 +245,23 @@ function DashboardPage() {
 
         <Card className="p-5">
           <div className="mb-4">
-            <div className="text-sm font-medium">AI analysis stats</div>
-            <div className="text-xs text-muted-foreground">Aggregate confidence</div>
+            <div className="text-sm font-medium">{t("dashboard.aiStats")}</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.aggregateConfidence")}</div>
           </div>
           <div className="space-y-4">
-            <Metric label="Avg confidence" value={`${avgConfidence}%`} icon={Activity} />
+            <Metric label={t("dashboard.avgConfidence")} value={`${localNum(avgConfidence)}%`} icon={Activity} />
             <Metric
-              label="Acceptance rate"
+              label={t("dashboard.acceptanceRate")}
               value={
                 stats.total
-                  ? `${Math.round(((stats.total - stats.rejected) / stats.total) * 100)}%`
+                  ? `${localNum(Math.round(((stats.total - stats.rejected) / stats.total) * 100))}%`
                   : "—"
               }
               icon={CheckCircle2}
             />
             <Metric
-              label="Critical reports"
-              value={reports?.filter((r) => r.severity === "critical").length ?? 0}
+              label={t("dashboard.criticalReports")}
+              value={localNum(reports?.filter((r) => r.severity === "critical").length ?? 0)}
               icon={AlertTriangle}
             />
           </div>
@@ -269,8 +271,8 @@ function DashboardPage() {
       <div className="grid gap-3 lg:grid-cols-3">
         <Card className="p-5 lg:col-span-2">
           <div className="mb-4">
-            <div className="text-sm font-medium">By category</div>
-            <div className="text-xs text-muted-foreground">Volume per report type</div>
+            <div className="text-sm font-medium">{t("dashboard.byCategory")}</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.volumePerType")}</div>
           </div>
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -293,7 +295,7 @@ function DashboardPage() {
         </Card>
 
         <Card className="p-5">
-          <div className="mb-4 text-sm font-medium">Recent activity</div>
+          <div className="mb-4 text-sm font-medium">{t("dashboard.recent")}</div>
           <div className="space-y-3">
             {(reports ?? []).slice(0, 6).map((r) => (
               <Link
@@ -306,14 +308,14 @@ function DashboardPage() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{r.title}</div>
                   <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                    {localRelative(formatDistanceToNow(new Date(r.created_at), { addSuffix: true }))}
                   </div>
                 </div>
               </Link>
             ))}
             {!reports?.length && (
               <div className="rounded-md border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-                No reports yet.
+                {t("dashboard.noReports")}
               </div>
             )}
           </div>
@@ -345,7 +347,7 @@ function StatCard({
         <Icon className={cn("h-4 w-4", accent)} />
       </div>
       <div className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">
-        {value.toLocaleString()}
+        {localNum(value.toLocaleString())}
       </div>
     </Card>
   );

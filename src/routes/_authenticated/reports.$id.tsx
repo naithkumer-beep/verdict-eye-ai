@@ -7,8 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin } from "@/lib/auth-store";
-import { getCategoryLabel } from "@/lib/categories";
 import { formatDistanceToNow, format } from "date-fns";
+import { localCategory, localNum, localRelative } from "@/lib/i18n";
 import { toast } from "sonner";
 import { ReportComments } from "@/components/report-comments";
 import { ReportReactions } from "@/components/report-reactions";
@@ -71,7 +71,7 @@ function ReportDetail() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-12 lg:px-8">
-        <div className="text-sm text-muted-foreground">Loading…</div>
+        <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
       </div>
     );
   }
@@ -79,9 +79,9 @@ function ReportDetail() {
   if (!report) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-12 lg:px-8">
-        <div className="text-sm text-muted-foreground">Report not found.</div>
+        <div className="text-sm text-muted-foreground">{t("reports.notFound")}</div>
         <Button asChild variant="outline" size="sm" className="mt-4">
-          <Link to="/reports">Back to reports</Link>
+          <Link to="/reports">{t("reports.backToReports")}</Link>
         </Button>
       </div>
     );
@@ -92,13 +92,13 @@ function ReportDetail() {
 
   const onDelete = async () => {
     if (!canDelete) return;
-    if (!confirm("Delete this report? This cannot be undone.")) return;
+    if (!confirm(t("reports.confirmDelete"))) return;
     const { error } = await supabase.from("reports").delete().eq("id", report.id);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Report deleted");
+    toast.success(t("reports.deleted"));
     navigate({ to: "/reports" });
   };
 
@@ -113,7 +113,7 @@ function ReportDetail() {
       <div className="flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           <Link to="/reports">
-            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> All reports
+            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> {t("reports.allReportsBack")}
           </Link>
         </Button>
         {canDelete && (
@@ -131,10 +131,10 @@ function ReportDetail() {
                 variant="outline"
                 className={`font-mono text-[10px] uppercase ${STATUS_COLOR[report.status] ?? ""}`}
               >
-                {report.status}
+                {t(`reports.status${report.status.charAt(0).toUpperCase()}${report.status.slice(1)}`, { defaultValue: report.status })}
               </Badge>
               <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                {getCategoryLabel(report.category)}
+                {localCategory(report.category)}
               </Badge>
               {report.severity && (
                 <Badge variant="outline" className="font-mono text-[10px] uppercase">
@@ -154,13 +154,13 @@ function ReportDetail() {
           </div>
           <div className="text-right">
             <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-              Submitted
+              {t("reports.submitted")}
             </div>
             <div className="mt-1 text-sm tabular-nums">
               {format(new Date(report.created_at), "MMM d, yyyy")}
             </div>
             <div className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
+              {localRelative(formatDistanceToNow(new Date(report.created_at), { addSuffix: true }))}
             </div>
           </div>
         </div>
@@ -185,7 +185,7 @@ function ReportDetail() {
       {/* Map */}
       {hasGeo && (
         <Card className="overflow-hidden p-0">
-          <ClientOnly fallback={<div className="grid h-[300px] place-items-center text-sm text-muted-foreground">Loading map…</div>}>
+          <ClientOnly fallback={<div className="grid h-[300px] place-items-center text-sm text-muted-foreground">{t("reports.loadingMap")}</div>}>
             <YangonMap
               center={[report.latitude as number, report.longitude as number]}
               markers={[
@@ -206,15 +206,15 @@ function ReportDetail() {
 
       {/* AI scores */}
       <div className="grid gap-3 sm:grid-cols-3">
-        <ScoreCard label="Confidence" value={report.confidence_score ?? 0} />
-        <ScoreCard label="Relevance" value={report.relevance_score ?? 0} />
-        <ScoreCard label="Quality" value={report.quality_score ?? 0} />
+        <ScoreCard label={t("reports.confidence")} value={report.confidence_score ?? 0} />
+        <ScoreCard label={t("reports.relevance")} value={report.relevance_score ?? 0} />
+        <ScoreCard label={t("reports.quality")} value={report.quality_score ?? 0} />
       </div>
 
       {/* Images */}
       {images.length > 0 && (
         <Card className="p-5">
-          <div className="mb-3 text-sm font-medium">Evidence</div>
+          <div className="mb-3 text-sm font-medium">{t("reports.evidence")}</div>
           <div className="grid gap-3 sm:grid-cols-2">
             {images.map((img) => (
               <img
@@ -231,18 +231,18 @@ function ReportDetail() {
       {/* AI summary + actions */}
       {report.ai_summary && (
         <Card className="p-5">
-          <div className="mb-3 text-sm font-medium">AI analysis</div>
+          <div className="mb-3 text-sm font-medium">{t("reports.aiAnalysis")}</div>
           <p className="text-sm text-muted-foreground">{report.ai_summary}</p>
           {report.risk_level && (
             <div className="mt-3 flex items-center gap-2 rounded-md border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-warning">
               <AlertTriangle className="h-3.5 w-3.5" />
-              <span>Risk: {report.risk_level}</span>
+              <span>{t("reports.risk")}: {report.risk_level}</span>
             </div>
           )}
           {actions.length > 0 && (
             <div className="mt-4">
               <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                Recommended actions
+                {t("reports.recommendedActions")}
               </div>
               <ul className="mt-2 space-y-1.5 text-sm">
                 {actions.map((a, i) => (
@@ -259,10 +259,10 @@ function ReportDetail() {
 
       {/* Impact metrics */}
       <Card className="grid grid-cols-2 gap-px overflow-hidden bg-border p-0 sm:grid-cols-4">
-        <Metric label="Impact" value={report.impact_score ?? 0} suffix="" />
-        <Metric label="Priority" value={report.priority_score ?? 0} suffix="" />
-        <Metric label="Population" value={(report.affected_population ?? 0).toLocaleString()} suffix="" />
-        <Metric label="Severity" value={report.severity ?? "—"} suffix="" />
+        <Metric label={t("reports.impact")} value={localNum(report.impact_score ?? 0)} suffix="" />
+        <Metric label={t("reports.priority")} value={localNum(report.priority_score ?? 0)} suffix="" />
+        <Metric label={t("reports.population")} value={localNum((report.affected_population ?? 0).toLocaleString())} suffix="" />
+        <Metric label={t("reports.severity")} value={report.severity ?? "—"} suffix="" />
       </Card>
 
       {/* Comments */}
@@ -284,7 +284,7 @@ function ScoreCard({ label, value }: { label: string; value: number }) {
         {label}
       </div>
       <div className={`mt-2 text-3xl font-semibold tabular-nums tracking-tight ${color}`}>
-        {value}
+        {localNum(value)}
         <span className="text-base text-muted-foreground">%</span>
       </div>
       <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-secondary">

@@ -16,8 +16,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { YangonMap, type MapMarker } from "@/components/yangon-map";
 import { useTranslation } from "react-i18next";
-import { REPORT_CATEGORIES, getCategoryLabel } from "@/lib/categories";
-import { localNum } from "@/lib/i18n";
+import { REPORT_CATEGORIES } from "@/lib/categories";
+import { localNum, localCategory } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/map")({
   head: () => ({ meta: [{ title: "Map — CivicLens AI" }] }),
@@ -74,7 +74,7 @@ function MapPage() {
       id: r.id,
       lat: r.latitude as number,
       lng: r.longitude as number,
-      title: `${r.title} · ${getCategoryLabel(r.category)}`,
+      title: `${r.title} · ${localCategory(r.category)}`,
       status: r.status ?? undefined,
       href: `/reports/${r.id}`,
     }));
@@ -117,7 +117,7 @@ function MapPage() {
               <SelectItem value="all">{t("reports.allCategories")}</SelectItem>
               {REPORT_CATEGORIES.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
-                  {c.label}
+                  {localCategory(c.value)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -167,7 +167,7 @@ function MapPage() {
                 </Badge>
               </div>
               <div className="mt-1 truncate text-[11px] text-muted-foreground">
-                {getCategoryLabel(r.category)}
+                {localCategory(r.category)}
               </div>
             </Link>
           ))}

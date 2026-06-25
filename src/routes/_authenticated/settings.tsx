@@ -60,17 +60,17 @@ function SettingsPage() {
       });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Profile saved");
+    else toast.success(t("settings.profileSaved"));
   };
 
   const onPickAvatar = async (file: File | null) => {
     if (!file || !user) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast.error("Use JPEG, PNG, or WebP");
+      toast.error(t("settings.useImageType"));
       return;
     }
     if (file.size > 4 * 1024 * 1024) {
-      toast.error("Max 4 MB");
+      toast.error(t("settings.max4mb"));
       return;
     }
     setUploadingAvatar(true);
@@ -95,9 +95,9 @@ function SettingsPage() {
 
       setAvatarUrl(path);
       setAvatarKey((k) => k + 1);
-      toast.success("Photo updated");
+      toast.success(t("settings.photoUpdated"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
+      toast.error(err instanceof Error ? err.message : t("settings.uploadFailed"));
     } finally {
       setUploadingAvatar(false);
     }
@@ -113,7 +113,7 @@ function SettingsPage() {
       await supabase.from("profiles").update({ avatar_url: null }).eq("id", user.id);
       setAvatarUrl(null);
       setAvatarKey((k) => k + 1);
-      toast.success("Photo removed");
+      toast.success(t("settings.photoRemoved"));
     } finally {
       setUploadingAvatar(false);
     }
@@ -171,16 +171,16 @@ function SettingsPage() {
             />
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">JPEG, PNG, or WebP — max 4 MB.</p>
+        <p className="text-xs text-muted-foreground">{t("settings.avatarHint")}</p>
       </Card>
 
       <Card className="space-y-4 p-5">
         <div>
-          <div className="text-sm font-medium">Account</div>
+          <div className="text-sm font-medium">{t("settings.account")}</div>
           <div className="mt-1 text-xs text-muted-foreground">{user?.email}</div>
           <div className="mt-2 flex gap-1.5">
             <Badge variant="outline" className="font-mono text-[10px] uppercase">
-              {role ?? "user"}
+              {t(`roles.${role ?? "user"}`)}
             </Badge>
             <Badge variant="outline" className="font-mono text-[10px] uppercase">
               {user?.app_metadata?.provider ?? "email"}
@@ -189,24 +189,24 @@ function SettingsPage() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="dn">Display name</Label>
+          <Label htmlFor="dn">{t("settings.displayName")}</Label>
           <Input
             id="dn"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Aung Aung"
+            placeholder={t("settings.displayNamePh")}
             maxLength={100}
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="bio">Bio</Label>
+          <Label htmlFor="bio">{t("settings.bio")}</Label>
           <Textarea
             id="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={3}
             maxLength={500}
-            placeholder="Tell others about yourself."
+            placeholder={t("settings.bioPh")}
           />
         </div>
         <Button onClick={save} disabled={loading}>

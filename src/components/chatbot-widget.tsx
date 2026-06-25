@@ -52,7 +52,7 @@ export function ChatbotWidget() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Chat failed";
       toast.error(msg);
-      setMessages([...next, { role: "assistant", content: "Sorry, I couldn't answer that." }]);
+      setMessages([...next, { role: "assistant", content: t("chatbot.failed") }]);
     } finally {
       setSending(false);
     }
@@ -64,7 +64,7 @@ export function ChatbotWidget() {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:scale-105"
-          aria-label="Open chatbot"
+          aria-label={t("chatbot.open")}
         >
           <MessageCircle className="h-6 w-6" />
         </button>
@@ -78,7 +78,7 @@ export function ChatbotWidget() {
               <div>
                 <div className="text-sm font-semibold">{t("chatbot.title")}</div>
                 <div className="font-mono text-[9px] uppercase text-muted-foreground">
-                  Powered by AI
+                  {t("chatbot.poweredBy")}
                 </div>
               </div>
             </div>

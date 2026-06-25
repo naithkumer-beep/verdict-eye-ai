@@ -72,7 +72,7 @@ export function ReportComments({ reportId }: { reportId: string }) {
 
   const post = async () => {
     if (!user) {
-      toast.error("Sign in to comment");
+      toast.error(t("comments.signInToComment"));
       return;
     }
     const content = text.trim();
@@ -91,7 +91,7 @@ export function ReportComments({ reportId }: { reportId: string }) {
 
   const del = async (id: string, uid: string) => {
     if (uid !== user?.id && !isAdmin) return;
-    if (!confirm("Delete this comment?")) return;
+    if (!confirm(t("comments.confirmDelete"))) return;
     const { error } = await supabase.from("report_comments").delete().eq("id", id);
     if (error) toast.error(error.message);
   };

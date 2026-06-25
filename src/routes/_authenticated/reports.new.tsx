@@ -37,6 +37,7 @@ import { validateReportImage, type ValidationResult } from "@/lib/ai-validation.
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { localNum } from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 
 
@@ -67,6 +68,7 @@ const INITIAL_STAGES: PipelineStage[] = [
 ];
 
 function NewReport() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const runValidation = useServerFn(validateReportImage);
@@ -111,7 +113,7 @@ function NewReport() {
     const YANGON: [number, number] = [16.8409, 96.1735];
     if (!navigator.geolocation) {
       setCoords(YANGON);
-      toast.message("Using Yangon city center", { description: "Geolocation not supported — drag the pin to your exact spot." });
+      toast.message(t("newReport.yangonFallback"), { description: t("newReport.yangonFallbackHint") });
       return;
     }
     setLocating(true);
@@ -119,16 +121,16 @@ function NewReport() {
       (pos) => {
         setCoords([pos.coords.latitude, pos.coords.longitude]);
         setLocating(false);
-        toast.success("Live location captured");
+        toast.success(t("newReport.liveCaptured"));
       },
       (err) => {
         setLocating(false);
         setCoords(YANGON);
-        toast.message("Using Yangon city center", {
+        toast.message(t("newReport.yangonFallback"), {
           description:
             err.code === err.PERMISSION_DENIED
-              ? "Location permission denied — tap the map to pin the exact spot."
-              : "Couldn't get GPS — tap the map to pin the exact spot.",
+              ? t("newReport.permissionDenied")
+              : t("newReport.couldNotGps"),
         });
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
@@ -158,7 +160,7 @@ function NewReport() {
   const runPipeline = async () => {
     if (!file || !user) return;
     if (!title.trim() || !description.trim()) {
-      toast.error("Title and description are required.");
+      toast.error(t("newReport.titleDescRequired"));
       return;
     }
 
@@ -171,7 +173,7 @@ function NewReport() {
       const tech = await technicalValidate(file);
       if (!tech.ok) {
         updateStage("technical", "failed", tech.reason);
-        toast.error(`Invalid image: ${tech.reason}`);
+        toast.error(`${t("newReport.invalidImage")}: ${tech.reason}`);
         return;
       }
       updateStage("technical", "passed", `${tech.width}×${tech.height} • ${(tech.size! / 1024).toFixed(0)} KB`);
@@ -189,7 +191,7 @@ function NewReport() {
         .upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) {
         updateStage("upload", "failed", upErr.message);
-        toast.error("Upload failed.");
+        toast.error(t("newReport.uploadFailed"));
         return;
       }
       const { data: signed } = await supabase.storage
@@ -197,10 +199,10 @@ function NewReport() {
         .createSignedUrl(path, 60 * 30);
       const imageUrl = signed?.signedUrl;
       if (!imageUrl) {
-        updateStage("upload", "failed", "Could not sign URL");
+        updateStage("upload", "failed", t("newReport.couldNotSign"));
         return;
       }
-      updateStage("upload", "passed", "Encrypted at rest");
+      updateStage("upload", "passed", t("newReport.encrypted"));
 
       // STAGES 2–6 — AI evaluation via server function
       updateStage("quality", "running");
@@ -231,8 +233,8 @@ function NewReport() {
         prev.map((s) =>
           s.status === "running"
             ? validation.accepted
-              ? { ...s, status: "passed", detail: "Cleared" }
-              : { ...s, status: "idle", detail: "Skipped (earlier stage failed)" }
+              ? { ...s, status: "passed", detail: t("newReport.cleared") }
+              : { ...s, status: "idle", detail: t("newReport.skipped") }
             : s,
         ),
       );
@@ -240,7 +242,7 @@ function NewReport() {
       setResult(validation);
 
       if (validation.accepted) {
-        toast.success("All 6 stages passed — ready to submit.");
+        toast.success(t("newReport.allPassedToast"));
 
         // Insert the report
         setSubmitting(true);
@@ -280,7 +282,7 @@ function NewReport() {
           .single();
 
         if (insErr || !report) {
-          toast.error("Could not save report.");
+          toast.error(t("newReport.couldNotSave"));
           setSubmitting(false);
           return;
         }
@@ -302,17 +304,17 @@ function NewReport() {
         await supabase.from("notifications").insert({
           user_id: user.id,
           type: "report_created",
-          title: "Report verified",
-          message: `${title.trim()} passed all 6 validation stages.`,
+          title: t("newReport.reportVerifiedTitle"),
+          message: t("newReport.reportVerifiedMessage", { title: title.trim() }),
           link: `/reports/${report.id}`,
         });
 
-        toast.success("Report created");
+        toast.success(t("newReport.reportCreated"));
         navigate({ to: "/reports/$id", params: { id: report.id } });
       } else {
         // Clean up the uploaded file since report was rejected
         await supabase.storage.from("report-images").remove([path]);
-        toast.error(validation.rejectionReason ?? "Image rejected");
+        toast.error(validation.rejectionReason ?? t("newReport.rejected"));
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Pipeline failed";
@@ -330,13 +332,13 @@ function NewReport() {
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div>
         <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-          New report
+          {t("newReport.eyebrow")}
         </div>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-          Submit a report
+          {t("newReport.heading")}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Every image clears 6 validation stages before analysis.
+          {t("newReport.subheading")}
         </p>
       </div>
 
@@ -345,28 +347,28 @@ function NewReport() {
         <Card className="space-y-4 p-5 lg:col-span-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">{t("newReport.titleLabel")}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Large pothole on Main Street"
+                placeholder={t("newReport.titlePlaceholder")}
                 maxLength={120}
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="desc">Description</Label>
+              <Label htmlFor="desc">{t("newReport.descLabel")}</Label>
               <Textarea
                 id="desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what you see and the conditions."
+                placeholder={t("newReport.descPlaceholder")}
                 rows={4}
                 maxLength={1000}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Category</Label>
+              <Label>{t("newReport.categoryLabel")}</Label>
               <Select value={category} onValueChange={(v) => setCategory(v as CategoryValue)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -374,21 +376,21 @@ function NewReport() {
                 <SelectContent>
                   {REPORT_CATEGORIES.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                      {t(`categories.${c.value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="dept">Department</Label>
+              <Label htmlFor="dept">{t("newReport.deptLabel")}</Label>
               <Select value={department} onValueChange={setDepartment}>
                 <SelectTrigger id="dept">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="auto">
-                    Auto · {resolvedDept?.name_en ?? "—"}
+                    {t("newReport.deptAuto")} · {resolvedDept?.name_en ?? "—"}
                   </SelectItem>
                   {departments.map((d) => (
                     <SelectItem key={d.code} value={d.code}>
@@ -398,32 +400,32 @@ function NewReport() {
                 </SelectContent>
               </Select>
               <p className="text-[11px] text-muted-foreground">
-                Auto-routes by category. Admins can override on review.
+                {t("newReport.deptHelp")}
               </p>
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="loc">Location (Yangon street / township)</Label>
+              <Label htmlFor="loc">{t("newReport.locLabel")}</Label>
               <Input
                 id="loc"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Pyay Road, Kamayut Township, Yangon"
+                placeholder={t("newReport.locPlaceholder")}
                 maxLength={200}
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-1.5">
-                  Pin on map (Yangon)
+                  {t("newReport.pinLabel")}
                   {locating && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-info/10 px-2 py-0.5 font-mono text-[10px] uppercase text-info">
-                      <Loader2 className="h-2.5 w-2.5 animate-spin" /> Locating…
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" /> {t("newReport.locating")}
                     </span>
                   )}
                   {coords && !locating && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 font-mono text-[10px] uppercase text-success">
-                      ● Live GPS
+                      ● {t("newReport.liveGps")}
                     </span>
                   )}
                 </Label>
@@ -435,7 +437,7 @@ function NewReport() {
                     disabled={locating}
                     onClick={() => {
                       if (!navigator.geolocation) {
-                        toast.error("Geolocation not supported");
+                        toast.error(t("newReport.geoNotSupported"));
                         return;
                       }
                       setLocating(true);
@@ -443,26 +445,26 @@ function NewReport() {
                         (pos) => {
                           setCoords([pos.coords.latitude, pos.coords.longitude]);
                           setLocating(false);
-                          toast.success("Live location updated");
+                          toast.success(t("newReport.liveUpdated"));
                         },
                         () => {
                           setLocating(false);
-                          toast.error("Could not get your location");
+                          toast.error(t("newReport.couldNotLocation"));
                         },
                         { enableHighAccuracy: true, timeout: 8000 },
                       );
                     }}
                   >
-                    Use my live location
+                    {t("newReport.useMyLive")}
                   </Button>
                   {coords && (
                     <Button type="button" variant="ghost" size="sm" onClick={() => setCoords(null)}>
-                      Clear
+                      {t("newReport.clear")}
                     </Button>
                   )}
                 </div>
               </div>
-              <ClientOnly fallback={<div className="grid h-[260px] place-items-center rounded-lg border border-border text-xs text-muted-foreground">Loading map…</div>}>
+              <ClientOnly fallback={<div className="grid h-[260px] place-items-center rounded-lg border border-border text-xs text-muted-foreground">{t("reports.loadingMap")}</div>}>
                 <YangonMap
                   height="260px"
                   pickable
@@ -471,7 +473,7 @@ function NewReport() {
                 />
               </ClientOnly>
               <p className="text-[11px] text-muted-foreground">
-                We auto-capture your live GPS. You can also click anywhere on the map to drop a pin{coords && ` · ${localNum(coords[0].toFixed(5))}, ${localNum(coords[1].toFixed(5))}`}
+                {t("newReport.mapHelp")}{coords && ` · ${localNum(coords[0].toFixed(5))}, ${localNum(coords[1].toFixed(5))}`}
               </p>
             </div>
 
@@ -479,7 +481,7 @@ function NewReport() {
 
 
           <div>
-            <Label>Evidence image</Label>
+            <Label>{t("newReport.evidenceLabel")}</Label>
             <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
               <label className="block cursor-pointer">
                 <div
@@ -497,9 +499,9 @@ function NewReport() {
                   ) : (
                     <div className="text-center">
                       <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
-                      <div className="mt-2 text-sm font-medium">Upload from device</div>
+                      <div className="mt-2 text-sm font-medium">{t("newReport.uploadFromDevice")}</div>
                       <div className="text-xs text-muted-foreground">
-                        JPEG, PNG, WebP • up to 8 MB
+                        {t("newReport.uploadHint")}
                       </div>
                     </div>
                   )}
@@ -516,9 +518,9 @@ function NewReport() {
                   <div className="relative grid place-items-center rounded-lg border-2 border-dashed border-border bg-secondary/30 px-4 py-8 transition-colors hover:border-accent/50">
                     <div className="text-center">
                       <ImageIcon className="mx-auto h-6 w-6 text-muted-foreground" />
-                      <div className="mt-2 text-sm font-medium">Take a photo</div>
+                      <div className="mt-2 text-sm font-medium">{t("newReport.takePhoto")}</div>
                       <div className="text-xs text-muted-foreground">
-                        Use your camera (mobile)
+                        {t("newReport.takePhotoHint")}
                       </div>
                     </div>
                     <input
@@ -544,12 +546,12 @@ function NewReport() {
             {analyzing || submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {submitting ? "Saving report…" : "Running 6-stage validation…"}
+                {submitting ? t("newReport.saving") : t("newReport.running")}
               </>
             ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Validate &amp; submit
+                {t("newReport.validateSubmit")}
               </>
             )}
           </Button>
@@ -559,9 +561,9 @@ function NewReport() {
         <Card className="space-y-4 p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium">Validation pipeline</div>
+              <div className="text-sm font-medium">{t("newReport.pipeline")}</div>
               <div className="text-xs text-muted-foreground">
-                {localNum(completed)}/{localNum(stages.length)} stages cleared
+                {localNum(completed)}/{localNum(stages.length)} {t("newReport.stagesCleared")}
               </div>
             </div>
             <ShieldCheck className="h-4 w-4 text-accent" />
@@ -596,11 +598,11 @@ function NewReport() {
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="font-medium">
-                      {result.accepted ? "All checks passed" : "Image rejected"}
+                      {result.accepted ? t("newReport.allPassed") : t("newReport.rejected")}
                     </div>
                     <div className="mt-0.5 text-xs opacity-90">
                       {result.accepted
-                        ? `Confidence ${result.scores.confidence} · Relevance ${result.scores.relevance} · Quality ${result.scores.quality}`
+                        ? `${t("reports.confidence")} ${localNum(result.scores.confidence)} · ${t("reports.relevance")} ${localNum(result.scores.relevance)} · ${t("reports.quality")} ${localNum(result.scores.quality)}`
                         : result.rejectionReason}
                     </div>
                   </div>
@@ -611,10 +613,9 @@ function NewReport() {
 
           <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground">
             <div className="mb-1 flex items-center gap-1.5 font-medium text-foreground">
-              <ImageIcon className="h-3 w-3" /> What we never do
+              <ImageIcon className="h-3 w-3" /> {t("newReport.neverDoTitle")}
             </div>
-            We never analyze first and validate later. The image is only stored
-            and scored if all 6 stages pass.
+            {t("newReport.neverDoBody")}
           </div>
         </Card>
       </div>
@@ -623,6 +624,7 @@ function NewReport() {
 }
 
 function StageRow({ stage, index }: { stage: PipelineStage; index: number }) {
+  const { t } = useTranslation();
   const Icon =
     stage.status === "passed"
       ? CheckCircle2
@@ -640,6 +642,9 @@ function StageRow({ stage, index }: { stage: PipelineStage; index: number }) {
           ? "text-accent"
           : "text-muted-foreground";
 
+  const name = t(`newReport.stages.${stage.key}`, { defaultValue: stage.name });
+  const desc = t(`newReport.stages.${stage.key}Desc`, { defaultValue: stage.description });
+
   return (
     <div
       className={cn(
@@ -648,15 +653,15 @@ function StageRow({ stage, index }: { stage: PipelineStage; index: number }) {
       )}
     >
       <div className="grid h-6 w-6 shrink-0 place-items-center rounded-md border border-border bg-background font-mono text-[10px] font-semibold tabular-nums">
-        {index}
+        {localNum(index)}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-medium">{stage.name}</span>
+          <span className="truncate text-sm font-medium">{name}</span>
           {Icon && <Icon className={cn("h-3.5 w-3.5 shrink-0", color, stage.status === "running" && "animate-spin")} />}
         </div>
         <div className="truncate text-[11px] text-muted-foreground">
-          {stage.detail ?? stage.description}
+          {stage.detail ?? desc}
         </div>
       </div>
     </div>

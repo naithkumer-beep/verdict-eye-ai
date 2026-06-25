@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin } from "@/lib/auth-store";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { localRelative } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/audit")({
   head: () => ({ meta: [{ title: "Audit log — CivicLens AI" }] }),
@@ -22,6 +24,7 @@ const ACTION_COLOR: Record<string, string> = {
 };
 
 function AuditPage() {
+  const { t } = useTranslation();
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
   const role = useAuthStore((s) => s.role);
@@ -76,8 +79,8 @@ function AuditPage() {
       <div className="flex items-center gap-2">
         <ScrollText className="h-5 w-5 text-accent" />
         <div>
-          <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Admin</div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Audit log</h1>
+          <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t("admin.audit.eyebrow")}</div>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("admin.audit.heading")}</h1>
         </div>
       </div>
 
@@ -87,7 +90,7 @@ function AuditPage() {
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by action, actor email, entity id"
+            placeholder={t("admin.audit.search")}
             className="h-8 pl-8 text-sm"
           />
         </div>
@@ -96,11 +99,11 @@ function AuditPage() {
       <Card className="overflow-hidden p-0">
         <div className="divide-y divide-border">
           {isLoading && (
-            <div className="p-10 text-center text-sm text-muted-foreground">Loading audit log…</div>
+            <div className="p-10 text-center text-sm text-muted-foreground">{t("admin.audit.loading")}</div>
           )}
           {!isLoading && filtered.length === 0 && (
             <div className="p-10 text-center text-sm text-muted-foreground">
-              No audit events recorded yet.
+              {t("admin.audit.empty")}
             </div>
           )}
           {filtered.map((l) => (
@@ -121,10 +124,10 @@ function AuditPage() {
                 )}
               </div>
               <div className="truncate text-xs text-muted-foreground sm:col-span-3">
-                {l.actor?.email ?? l.actor?.display_name ?? "system"}
+                {l.actor?.email ?? l.actor?.display_name ?? t("admin.audit.system")}
               </div>
               <div className="text-xs text-muted-foreground sm:col-span-2 sm:text-right">
-                {formatDistanceToNow(new Date(l.created_at), { addSuffix: true })}
+                {localRelative(formatDistanceToNow(new Date(l.created_at), { addSuffix: true }))}
               </div>
             </div>
           ))}

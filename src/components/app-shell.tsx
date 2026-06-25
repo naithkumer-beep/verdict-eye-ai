@@ -27,6 +27,7 @@ import { useAuthStore, useIsModerator } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { localNum } from "@/lib/i18n";
 
 interface NavItem {
   to: string;
@@ -93,7 +94,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             qc.invalidateQueries({ queryKey: ["rewards-profile"] });
             qc.invalidateQueries({ queryKey: ["reward-profile"] });
           }
-          sonnerToast(n.title ?? "Notification", { description: n.message });
+          sonnerToast(n.title ?? t("notifications.fallbackTitle"), { description: n.message });
         },
       )
       .on(
@@ -107,7 +108,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const handleSignOut = async () => {
     await signOut();
-    toast.success("Signed out");
+    toast.success(t("nav.signedOut"));
     navigate({ to: "/", replace: true });
   };
 
@@ -145,7 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="flex-1">{t(item.labelKey)}</span>
               {showBadge && (
                 <Badge className="h-4 min-w-4 justify-center bg-accent px-1 font-mono text-[10px] text-accent-foreground">
-                  {unread > 99 ? "99+" : unread}
+                  {unread > 99 ? "99+" : localNum(unread)}
                 </Badge>
               )}
             </Link>
@@ -182,7 +183,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="truncate text-xs font-medium">{displayName}</div>
             <div className="flex items-center gap-1">
               <Badge variant="outline" className="h-4 px-1 font-mono text-[9px] uppercase">
-                {role ?? "user"}
+                {t(`roles.${role ?? "user"}`)}
               </Badge>
             </div>
           </div>
@@ -219,7 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               size="icon"
               className="lg:hidden"
               onClick={() => setOpen(true)}
-              aria-label="Open menu"
+              aria-label={t("nav.openMenu")}
             >
               <Menu className="h-4 w-4" />
             </Button>
