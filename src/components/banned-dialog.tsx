@@ -24,7 +24,7 @@ export function BannedDialog() {
             <Ban className="h-6 w-6 text-destructive" />
           </div>
           <AlertDialogTitle className="text-center">
-            Your account is banned
+            Your account is banned by the admin.
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             Your account has been banned by an administrator. You have been signed
