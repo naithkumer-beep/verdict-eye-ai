@@ -175,6 +175,7 @@ function DashboardPage() {
           value={stats.verified}
           icon={CheckCircle2}
           accent="text-success"
+          tint="bg-success/5 border-success/20"
         />
         <StatCard
           label="Rejected"
