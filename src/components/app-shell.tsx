@@ -146,7 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="flex-1">{t(item.labelKey)}</span>
               {showBadge && (
                 <Badge className="h-4 min-w-4 justify-center bg-accent px-1 font-mono text-[10px] text-accent-foreground">
-                  {unread > 99 ? "99+" : require("@/lib/i18n").localNum(unread)}
+                  {unread > 99 ? "99+" : localNum(unread)}
                 </Badge>
               )}
             </Link>
