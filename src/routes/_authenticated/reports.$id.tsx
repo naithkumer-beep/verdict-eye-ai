@@ -284,7 +284,7 @@ function ScoreCard({ label, value }: { label: string; value: number }) {
         {label}
       </div>
       <div className={`mt-2 text-3xl font-semibold tabular-nums tracking-tight ${color}`}>
-        {value}
+        {localNum(value)}
         <span className="text-base text-muted-foreground">%</span>
       </div>
       <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-secondary">
