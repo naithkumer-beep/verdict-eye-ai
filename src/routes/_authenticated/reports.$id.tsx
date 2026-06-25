@@ -275,7 +275,9 @@ function ReportDetail() {
 
 function ScoreCard({ label, value }: { label: string; value: number }) {
   const color =
-    value >= 85 ? "text-success" : value >= 70 ? "text-accent" : "text-warning";
+    value >= 85 ? "text-green" : value >= 70 ? "text-accent" : "text-warning";
+  const barGradient =
+    value >= 85 ? "bg-gradient-to-r from-green to-success" : "bg-gradient-to-r from-accent to-foreground";
   return (
     <Card className="p-5">
       <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -287,7 +289,7 @@ function ScoreCard({ label, value }: { label: string; value: number }) {
       </div>
       <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-secondary">
         <div
-          className="h-full bg-gradient-to-r from-accent to-foreground"
+          className={`h-full ${barGradient}`}
           style={{ width: `${value}%` }}
         />
       </div>
