@@ -164,7 +164,7 @@ function ReportsList() {
               key={r.id}
               to="/reports/$id"
               params={{ id: r.id }}
-              className="grid grid-cols-12 items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50"
+              className="grid grid-cols-12 items-center gap-3 px-4 py-4 text-sm transition-colors hover:bg-muted/50"
             >
               <div className="col-span-5 flex min-w-0 items-start gap-4">
                 {r.thumbUrl ? (
