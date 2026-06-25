@@ -166,20 +166,20 @@ function ReportsList() {
               params={{ id: r.id }}
               className="grid grid-cols-12 items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50"
             >
-              <div className="col-span-5 flex min-w-0 items-start gap-3">
+              <div className="col-span-5 flex min-w-0 items-start gap-4">
                 {r.thumbUrl ? (
                   <img
                     src={r.thumbUrl}
                     alt=""
                     loading="lazy"
-                    className="h-12 w-12 shrink-0 rounded-md border border-border object-cover"
+                    className="h-20 w-20 shrink-0 rounded-lg border border-border object-cover"
                   />
                 ) : (
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-dashed border-border text-[10px] text-muted-foreground">
+                  <div className="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-dashed border-border text-[10px] text-muted-foreground">
                     No img
                   </div>
                 )}
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 py-1">
                   <div className="truncate font-medium">{r.title}</div>
                   <div className="line-clamp-2 text-xs text-muted-foreground">{r.description}</div>
                 </div>
