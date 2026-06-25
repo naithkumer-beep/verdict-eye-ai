@@ -48,6 +48,8 @@ import { formatDistanceToNow, isPast } from "date-fns";
 import { toast } from "sonner";
 import { sendTransactionalEmail } from "@/lib/email/send";
 import { YangonMap } from "@/components/yangon-map";
+import { useTranslation } from "react-i18next";
+import { localNum, localRelative, localCategory } from "@/lib/i18n";
 
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -73,6 +75,7 @@ const PRIORITY_COLOR: Record<string, string> = {
 };
 
 function AdminPage() {
+  const { t } = useTranslation();
   const isModerator = useIsModerator();
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
@@ -82,6 +85,7 @@ function AdminPage() {
   const escalateFn = useServerFn(runEscalation);
   const refreshFn = useServerFn(refreshAdminPredictions);
   const [inspectId, setInspectId] = useState<string | null>(null);
+
 
 
   useEffect(() => {
@@ -188,7 +192,7 @@ function AdminPage() {
       .eq("id", id);
     if (error) return toast.error(error.message);
     await audit("report.status_change", id, { title: prev?.title, from: prev?.status, to: status });
-    toast.success(`Status → ${status}`);
+    toast.success(t("admin.statusUpdated", { status }));
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
 
     // Email the reporter when their report is resolved — idempotent via report_resolved_emails
@@ -227,11 +231,11 @@ function AdminPage() {
               totalPoints: (profile?.points as number | undefined) ?? undefined,
             },
           });
-          toast.success("Resolution email sent");
+          toast.success(t("admin.resolutionEmailSent"));
         }
       } catch (e) {
         console.error("Failed to send resolution email", e);
-        toast.error("Could not send resolution email");
+        toast.error(t("admin.resolutionEmailFailed"));
       }
     }
   };
@@ -243,7 +247,7 @@ function AdminPage() {
       .eq("id", id);
     if (error) return toast.error(error.message);
     await audit("report.priority_change", id, { to: priority });
-    toast.success(`Priority → ${priority}`);
+    toast.success(t("admin.priorityUpdated", { priority }));
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
@@ -255,16 +259,16 @@ function AdminPage() {
       .eq("id", id);
     if (error) return toast.error(error.message);
     await audit("report.department_assign", id, { to: dept?.name_en });
-    toast.success(`Assigned to ${dept?.name_en}`);
+    toast.success(t("admin.assignedTo", { name: dept?.name_en ?? "" }));
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
   const delReport = async (id: string, title: string) => {
-    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    if (!confirm(t("admin.confirmDelete", { title }))) return;
     const { error } = await supabase.from("reports").delete().eq("id", id);
     if (error) return toast.error(error.message);
     await audit("report.delete", id, { title });
-    toast.success("Report deleted");
+    toast.success(t("admin.reportDeleted"));
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
@@ -275,9 +279,9 @@ function AdminPage() {
         return r;
       }),
       {
-        loading: "Running escalation…",
-        success: (r: any) => `Escalated ${r?.escalated ?? 0} report(s)`,
-        error: "Escalation failed",
+        loading: t("admin.escalating"),
+        success: (r: any) => t("admin.escalated", { n: localNum(r?.escalated ?? 0) }),
+        error: t("admin.escalateFailed"),
       },
     );
   };
@@ -288,9 +292,9 @@ function AdminPage() {
         qc.invalidateQueries({ queryKey: ["admin-prediction"] }),
       ),
       {
-        loading: "Refreshing AI insights…",
-        success: "Insights updated",
-        error: "Failed to refresh",
+        loading: t("admin.refreshingAi"),
+        success: t("admin.insightsUpdated"),
+        error: t("admin.refreshFailed"),
       },
     );
   };
