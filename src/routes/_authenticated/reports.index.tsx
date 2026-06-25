@@ -35,6 +35,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 function ReportsList() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
