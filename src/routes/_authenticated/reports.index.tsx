@@ -49,25 +49,32 @@ function ReportsList() {
       if (error) throw error;
       const rows = data ?? [];
       const ids = rows.map((r) => r.id);
-      if (!ids.length) return rows.map((r) => ({ ...r, thumbUrl: null as string | null }));
+      if (!ids.length) return rows.map((r) => ({ ...r, thumbUrls: [] as string[] }));
       const { data: imgs } = await supabase
         .from("report_images")
         .select("report_id,storage_path")
         .in("report_id", ids);
-      const firstByReport = new Map<string, string>();
+      const pathsByReport = new Map<string, string[]>();
       for (const img of imgs ?? []) {
-        if (!firstByReport.has(img.report_id)) firstByReport.set(img.report_id, img.storage_path);
+        const arr = pathsByReport.get(img.report_id) ?? [];
+        arr.push(img.storage_path);
+        pathsByReport.set(img.report_id, arr);
       }
-      const signed = await Promise.all(
-        Array.from(firstByReport.entries()).map(async ([rid, path]) => {
-          const { data: s } = await supabase.storage
-            .from("report-images")
-            .createSignedUrl(path, 60 * 60);
-          return [rid, s?.signedUrl ?? null] as const;
+      const entries = await Promise.all(
+        Array.from(pathsByReport.entries()).map(async ([rid, paths]) => {
+          const urls = await Promise.all(
+            paths.slice(0, 8).map(async (p) => {
+              const { data: s } = await supabase.storage
+                .from("report-images")
+                .createSignedUrl(p, 60 * 60);
+              return s?.signedUrl ?? null;
+            }),
+          );
+          return [rid, urls.filter((u): u is string => !!u)] as const;
         }),
       );
-      const urlByReport = new Map(signed);
-      return rows.map((r) => ({ ...r, thumbUrl: urlByReport.get(r.id) ?? null }));
+      const urlsByReport = new Map(entries);
+      return rows.map((r) => ({ ...r, thumbUrls: urlsByReport.get(r.id) ?? [] }));
     },
     enabled: !!user,
   });
