@@ -113,7 +113,7 @@ function NewReport() {
     const YANGON: [number, number] = [16.8409, 96.1735];
     if (!navigator.geolocation) {
       setCoords(YANGON);
-      toast.message("Using Yangon city center", { description: "Geolocation not supported — drag the pin to your exact spot." });
+      toast.message(t("newReport.yangonFallback"), { description: t("newReport.yangonFallbackHint") });
       return;
     }
     setLocating(true);
@@ -121,16 +121,16 @@ function NewReport() {
       (pos) => {
         setCoords([pos.coords.latitude, pos.coords.longitude]);
         setLocating(false);
-        toast.success("Live location captured");
+        toast.success(t("newReport.liveCaptured"));
       },
       (err) => {
         setLocating(false);
         setCoords(YANGON);
-        toast.message("Using Yangon city center", {
+        toast.message(t("newReport.yangonFallback"), {
           description:
             err.code === err.PERMISSION_DENIED
-              ? "Location permission denied — tap the map to pin the exact spot."
-              : "Couldn't get GPS — tap the map to pin the exact spot.",
+              ? t("newReport.permissionDenied")
+              : t("newReport.couldNotGps"),
         });
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
