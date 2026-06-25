@@ -47,7 +47,27 @@ function ReportsList() {
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
-      return data ?? [];
+      const rows = data ?? [];
+      const ids = rows.map((r) => r.id);
+      if (!ids.length) return rows.map((r) => ({ ...r, thumbUrl: null as string | null }));
+      const { data: imgs } = await supabase
+        .from("report_images")
+        .select("report_id,storage_path")
+        .in("report_id", ids);
+      const firstByReport = new Map<string, string>();
+      for (const img of imgs ?? []) {
+        if (!firstByReport.has(img.report_id)) firstByReport.set(img.report_id, img.storage_path);
+      }
+      const signed = await Promise.all(
+        Array.from(firstByReport.entries()).map(async ([rid, path]) => {
+          const { data: s } = await supabase.storage
+            .from("report-images")
+            .createSignedUrl(path, 60 * 60);
+          return [rid, s?.signedUrl ?? null] as const;
+        }),
+      );
+      const urlByReport = new Map(signed);
+      return rows.map((r) => ({ ...r, thumbUrl: urlByReport.get(r.id) ?? null }));
     },
     enabled: !!user,
   });
@@ -146,9 +166,23 @@ function ReportsList() {
               params={{ id: r.id }}
               className="grid grid-cols-12 items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50"
             >
-              <div className="col-span-5 min-w-0">
-                <div className="truncate font-medium">{r.title}</div>
-                <div className="truncate text-xs text-muted-foreground">{r.description}</div>
+              <div className="col-span-5 flex min-w-0 items-start gap-3">
+                {r.thumbUrl ? (
+                  <img
+                    src={r.thumbUrl}
+                    alt=""
+                    loading="lazy"
+                    className="h-12 w-12 shrink-0 rounded-md border border-border object-cover"
+                  />
+                ) : (
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-dashed border-border text-[10px] text-muted-foreground">
+                    No img
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-medium">{r.title}</div>
+                  <div className="line-clamp-2 text-xs text-muted-foreground">{r.description}</div>
+                </div>
               </div>
               <div className="col-span-2 truncate text-xs text-muted-foreground">
                 {getCategoryLabel(r.category)}
