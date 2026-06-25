@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuthStore } from "@/lib/auth-store";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup", "reset"]).optional().default("signin"),
@@ -37,6 +38,7 @@ const passwordSchema = z
   .max(128, "Password too long");
 
 function AuthPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const search = Route.useSearch();
   const user = useAuthStore((s) => s.user);
@@ -50,7 +52,12 @@ function AuthPage() {
   const setBannedDialogOpen = useAuthStore((s) => s.setBannedDialogOpen);
 
   const isBanError = (msg: string) =>
-    /ban(ned)?|user_banned/i.test(msg);
+    /ban(ned)?|user_banned|failed to sign in with vendor/i.test(msg);
+
+  const showBannedMessage = () => {
+    setBannedDialogOpen(true);
+    toast.error(t("banned.title"));
+  };
 
   useEffect(() => {
     if (initialized && user) {
@@ -108,7 +115,7 @@ function AuthPage() {
       setLoading(false);
       if (error) {
         if (isBanError(error.message)) {
-          setBannedDialogOpen(true);
+          showBannedMessage();
         } else {
           toast.error(error.message);
         }
@@ -128,7 +135,7 @@ function AuthPage() {
       setLoading(false);
       const msg = result.error.message ?? "Sign in failed";
       if (isBanError(msg)) {
-        setBannedDialogOpen(true);
+        showBannedMessage();
       } else {
         toast.error(msg);
       }
