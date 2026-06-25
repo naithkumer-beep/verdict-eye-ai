@@ -283,6 +283,11 @@ function AdminUsersPage() {
                 >
                   {u.role}
                 </Badge>
+                {u.banned && (
+                  <Badge variant="outline" className="ml-1 border-destructive/40 bg-destructive/10 font-mono text-[10px] uppercase text-destructive">
+                    banned
+                  </Badge>
+                )}
                 {u.id === me?.id && (
                   <div className="mt-0.5 font-mono text-[10px] uppercase text-muted-foreground">(you)</div>
                 )}
