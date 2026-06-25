@@ -123,15 +123,15 @@ function DashboardPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            Overview
+            {t("dashboard.overview")}
           </div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Dashboard
+            {t("dashboard.title")}
           </h1>
         </div>
         <Button asChild>
           <Link to="/reports/new">
-            New report <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+            {t("reports.newReport")} <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
           </Link>
         </Button>
       </div>
@@ -144,16 +144,16 @@ function DashboardPage() {
             </div>
             <div>
               <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                Reward points
+                {t("dashboard.rewardPoints")}
               </div>
-              <div className="text-2xl font-semibold tracking-tight">{points}</div>
+              <div className="text-2xl font-semibold tracking-tight">{localNum(points)}</div>
               <div className="text-xs text-muted-foreground">
-                Earn +10 per report submitted, +50 when it's resolved.
+                {t("dashboard.earnHint")}
               </div>
             </div>
           </div>
           <Button asChild variant="outline" size="sm">
-            <Link to="/reports/new">Earn more <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+            <Link to="/reports/new">{t("dashboard.earnMore")} <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
           </Button>
         </Card>
       )}
@@ -161,26 +161,26 @@ function DashboardPage() {
       {/* Stat tiles */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Total reports"
+          label={t("dashboard.totalReports")}
           value={stats.total}
           icon={FileText}
           accent="text-foreground"
         />
         <StatCard
-          label="Pending review"
+          label={t("dashboard.pendingReview")}
           value={stats.pending}
           icon={Clock}
           accent="text-warning"
         />
         <StatCard
-          label="Verified"
+          label={t("dashboard.verified")}
           value={stats.verified}
           icon={CheckCircle2}
           accent="text-success"
           tint="bg-success/5 border-success/20"
         />
         <StatCard
-          label="Rejected"
+          label={t("dashboard.rejected")}
           value={stats.rejected}
           icon={XCircle}
           accent="text-destructive"
@@ -192,11 +192,11 @@ function DashboardPage() {
         <Card className="col-span-1 p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium">14-day trend</div>
-              <div className="text-xs text-muted-foreground">Daily report volume</div>
+              <div className="text-sm font-medium">{t("dashboard.trend14")}</div>
+              <div className="text-xs text-muted-foreground">{t("dashboard.dailyVolume")}</div>
             </div>
             <Badge variant="outline" className="font-mono text-[10px]">
-              <TrendingUp className="mr-1 h-3 w-3" /> Live
+              <TrendingUp className="mr-1 h-3 w-3" /> {t("dashboard.live")}
             </Badge>
           </div>
           <div className="h-56 w-full">
