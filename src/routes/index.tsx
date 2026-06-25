@@ -196,7 +196,7 @@ function LandingPage() {
                   <div className="grid h-8 w-8 place-items-center rounded-md border border-border bg-background font-mono text-sm font-semibold tabular-nums">
                     {n}
                   </div>
-                  <Icon className="h-5 w-5 text-accent" />
+                  <Icon className={cn("h-5 w-5", n === "4" ? "text-green" : "text-accent")} />
                 </div>
                 <div className="font-medium">{title}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{body}</div>
