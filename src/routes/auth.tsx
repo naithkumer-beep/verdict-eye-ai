@@ -135,7 +135,12 @@ function AuthPage() {
     });
     if (result.error) {
       setLoading(false);
-      toast.error(result.error.message ?? "Sign in failed");
+      const msg = result.error.message ?? "Sign in failed";
+      if (isBanError(msg)) {
+        setBannedOpen(true);
+      } else {
+        toast.error(msg);
+      }
       return;
     }
     if (result.redirected) return;
