@@ -32,7 +32,7 @@ function EmergencyPage() {
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 lg:px-8">
       <div>
         <div className="font-mono text-xs uppercase tracking-wider text-destructive">
-          Emergency · ရန်ကုန်
+          {t("emergency.badge")}
         </div>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">{t("emergency.title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("emergency.subtitle")}</p>
