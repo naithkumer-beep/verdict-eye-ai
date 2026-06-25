@@ -116,7 +116,11 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setLoading(false);
       if (error) {
-        toast.error(error.message);
+        if (isBanError(error.message)) {
+          setBannedOpen(true);
+        } else {
+          toast.error(error.message);
+        }
       } else {
         toast.success("Welcome back");
         navigate({ to: search.redirect ?? "/reports", replace: true });
