@@ -49,7 +49,7 @@ function EmergencyPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold">{t(`emergency.${h.key}`)}</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">{h.description}</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">{t(`emergency.descriptions.${h.key}`)}</div>
                   <div className="mt-2 flex items-center justify-between gap-3">
                     <div className="font-mono text-2xl font-semibold tabular-nums">{h.number}</div>
                     <Button asChild size="sm" variant="destructive">
