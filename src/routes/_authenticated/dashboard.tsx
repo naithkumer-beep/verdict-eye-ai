@@ -31,8 +31,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin, useIsModerator } from "@/lib/auth-store";
-import { getCategoryLabel } from "@/lib/categories";
 import { formatDistanceToNow, subDays, startOfDay, format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { localNum, localRelative, localCategory } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — CIAP" }] }),
