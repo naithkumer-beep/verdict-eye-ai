@@ -316,6 +316,26 @@ function AuthPage() {
           </div>
         </motion.div>
       </main>
+
+      <AlertDialog open={bannedOpen} onOpenChange={setBannedOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-destructive/40 bg-destructive/10">
+              <Ban className="h-6 w-6 text-destructive" />
+            </div>
+            <AlertDialogTitle className="text-center">Your account has been banned</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              An administrator has banned this account. You cannot sign in or use the platform.
+              If you believe this is a mistake, please contact support to appeal.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setBannedOpen(false)} className="w-full">
+              Understood
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
