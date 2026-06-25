@@ -665,13 +665,13 @@ function PredictionInspector({ reportId, onClose }: { reportId: string | null; o
 
   return (
     <Dialog open={!!reportId} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{r.title ?? "Report"}</DialogTitle>
+      <DialogContent className="flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-2xl flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 border-b border-border px-5 py-4 pr-12">
+          <DialogTitle className="truncate">{r.title ?? "Report"}</DialogTitle>
           <DialogDescription>AI prediction inputs, confidence scores, and generated payload.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <ScoreBox label="Confidence" value={r.confidence_score ?? 0} />
             <ScoreBox label="Relevance" value={r.relevance_score ?? 0} />
@@ -713,6 +713,7 @@ function PredictionInspector({ reportId, onClose }: { reportId: string | null; o
         </div>
       </DialogContent>
     </Dialog>
+
   );
 }
 
