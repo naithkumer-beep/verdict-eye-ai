@@ -47,7 +47,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [bannedOpen, setBannedOpen] = useState(false);
+  const setBannedDialogOpen = useAuthStore((s) => s.setBannedDialogOpen);
 
   const isBanError = (msg: string) =>
     /ban(ned)?|user_banned/i.test(msg);
