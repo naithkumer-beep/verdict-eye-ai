@@ -3,7 +3,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Users, Search, Shield, ShieldCheck, User as UserIcon, Sparkles, Loader2, Mail } from "lucide-react";
+import { ArrowLeft, Users, Search, Shield, ShieldCheck, User as UserIcon, Sparkles, Loader2, Mail, Ban, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin } from "@/lib/auth-store";
 import { AvatarDisplay } from "@/components/avatar-display";
-import { suggestUserRole, listAdminUsers } from "@/lib/admin-ai.functions";
+import { suggestUserRole, listAdminUsers, setUserBanned } from "@/lib/admin-ai.functions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -41,6 +41,8 @@ interface UserRow {
   points: number;
   reports_total: number;
   reports_resolved: number;
+  banned: boolean;
+  banned_until: string | null;
 }
 
 interface Suggestion {
@@ -99,6 +101,9 @@ function AdminUsersPage() {
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const suggestFn = useServerFn(suggestUserRole);
   const listUsersFn = useServerFn(listAdminUsers);
+  const banFn = useServerFn(setUserBanned);
+  const [banTarget, setBanTarget] = useState<UserRow | null>(null);
+  const [banPending, setBanPending] = useState(false);
 
   useEffect(() => {
     if (initialized && role !== null && !isAdmin) navigate({ to: "/dashboard", replace: true });
@@ -278,6 +283,11 @@ function AdminUsersPage() {
                 >
                   {u.role}
                 </Badge>
+                {u.banned && (
+                  <Badge variant="outline" className="ml-1 border-destructive/40 bg-destructive/10 font-mono text-[10px] uppercase text-destructive">
+                    banned
+                  </Badge>
+                )}
                 {u.id === me?.id && (
                   <div className="mt-0.5 font-mono text-[10px] uppercase text-muted-foreground">(you)</div>
                 )}
@@ -318,6 +328,27 @@ function AdminUsersPage() {
                 >
                   <ShieldCheck className="h-3 w-3" /> Admin
                 </Button>
+                {u.banned ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1 border-success/40 text-xs text-success hover:bg-success/10"
+                    disabled={u.id === me?.id}
+                    onClick={() => setBanTarget(u)}
+                  >
+                    <CheckCircle2 className="h-3 w-3" /> Unban
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1 border-destructive/40 text-xs text-destructive hover:bg-destructive/10"
+                    disabled={u.id === me?.id || u.role === "admin"}
+                    onClick={() => setBanTarget(u)}
+                  >
+                    <Ban className="h-3 w-3" /> Ban
+                  </Button>
+                )}
               </div>
             </div>
           ))}
@@ -428,6 +459,51 @@ function AdminUsersPage() {
               }}
             >
               Apply {suggestion?.suggested ?? "role"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!banTarget} onOpenChange={(o) => !o && !banPending && setBanTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {banTarget?.banned ? (
+                <><CheckCircle2 className="h-4 w-4 text-success" /> Unban user</>
+              ) : (
+                <><Ban className="h-4 w-4 text-destructive" /> Ban user</>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {banTarget?.banned
+                ? `Restore access for ${banTarget?.display_name ?? banTarget?.email}? They will be able to sign in and submit reports again.`
+                : `Block ${banTarget?.display_name ?? banTarget?.email} from signing in or using the platform. Their existing reports stay visible.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" disabled={banPending} onClick={() => setBanTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant={banTarget?.banned ? "default" : "destructive"}
+              disabled={banPending}
+              onClick={async () => {
+                if (!banTarget) return;
+                setBanPending(true);
+                try {
+                  await banFn({ data: { userId: banTarget.id, banned: !banTarget.banned } });
+                  toast.success(banTarget.banned ? "User unbanned" : "User banned");
+                  setBanTarget(null);
+                  void qc.invalidateQueries({ queryKey: ["admin-users"] });
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setBanPending(false);
+                }
+              }}
+            >
+              {banPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+              {banTarget?.banned ? "Unban" : "Ban"}
             </Button>
           </DialogFooter>
         </DialogContent>

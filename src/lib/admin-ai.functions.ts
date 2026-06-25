@@ -107,13 +107,14 @@ export const listAdminUsers = createServerFn({ method: "GET" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: profiles, error: pErr }, { data: roles, error: rErr }, { data: reports, error: repErr }] = await Promise.all([
+    const [{ data: profiles, error: pErr }, { data: roles, error: rErr }, { data: reports, error: repErr }, authList] = await Promise.all([
       supabaseAdmin
         .from("profiles")
         .select("id,email,display_name,avatar_url,created_at,points")
         .order("created_at", { ascending: false }),
       supabaseAdmin.from("user_roles").select("user_id,role"),
       supabaseAdmin.from("reports").select("user_id,status"),
+      supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     ]);
     if (pErr) throw pErr;
     if (rErr) throw rErr;
@@ -137,8 +138,16 @@ export const listAdminUsers = createServerFn({ method: "GET" })
       stats.set(r.user_id, s);
     }
 
+    const bannedUntil = new Map<string, string | null>();
+    for (const u of authList?.data?.users ?? []) {
+      const b = (u as { banned_until?: string | null }).banned_until ?? null;
+      bannedUntil.set(u.id, b);
+    }
+
     return (profiles ?? []).map((p) => {
       const s = stats.get(p.id as string) ?? { total: 0, resolved: 0 };
+      const bu = bannedUntil.get(p.id as string) ?? null;
+      const isBanned = !!bu && new Date(bu).getTime() > Date.now();
       return {
         id: p.id as string,
         email: (p.email as string | null) ?? null,
@@ -149,8 +158,47 @@ export const listAdminUsers = createServerFn({ method: "GET" })
         points: (p.points as number | null) ?? 0,
         reports_total: s.total,
         reports_resolved: s.resolved,
+        banned: isBanned,
+        banned_until: bu,
       };
     });
+  });
+
+// Ban or unban a user via Supabase Auth Admin API. Admins only.
+export const setUserBanned = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { userId: string; banned: boolean }) => d)
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+    if (data.userId === context.userId) throw new Error("You cannot ban yourself");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Block banning other admins
+    const { data: targetIsAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: data.userId,
+      _role: "admin",
+    });
+    if (targetIsAdmin && data.banned) throw new Error("Cannot ban another admin");
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      ban_duration: data.banned ? "876000h" : "none",
+    });
+    if (error) throw error;
+
+    await supabaseAdmin.from("audit_logs").insert({
+      user_id: context.userId,
+      action: data.banned ? "user.ban" : "user.unban",
+      entity_type: "user",
+      entity_id: data.userId,
+      details: { banned: data.banned },
+    });
+
+    return { ok: true, banned: data.banned };
   });
 
 // AI auto role suggestion — analyses a user's report history and recommends a role.
