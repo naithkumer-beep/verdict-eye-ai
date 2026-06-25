@@ -13,10 +13,21 @@ interface AuthState {
   role: AppRole | null;
   loading: boolean;
   initialized: boolean;
+  bannedDialogOpen: boolean;
+  setBannedDialogOpen: (open: boolean) => void;
   init: () => Promise<void>;
   refreshRole: () => Promise<void>;
   signOut: () => Promise<void>;
 }
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  session: null,
+  role: null,
+  loading: true,
+  initialized: false,
+  bannedDialogOpen: false,
+  setBannedDialogOpen: (open) => set({ bannedDialogOpen: open }),
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
