@@ -111,8 +111,7 @@ function RewardsPage() {
 
 
   // Filters
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [submittedDate, setSubmittedDate] = useState("");
   const [kind, setKind] = useState<string>("all");
   const [reportId, setReportId] = useState("");
 
@@ -125,15 +124,19 @@ function RewardsPage() {
         const code = (reportCodeMap[e.report_id ?? ""] ?? "").toLowerCase();
         if (!rid.includes(q) && !code.includes(q)) return false;
       }
-      const t = new Date(e.created_at).getTime();
-      if (fromDate && t < new Date(fromDate).getTime()) return false;
-      if (toDate && t > new Date(toDate).getTime() + 86_399_999) return false;
+      if (submittedDate) {
+        if (e.kind !== "report_created") return false;
+        const d = new Date(e.created_at);
+        const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        if (ymd !== submittedDate) return false;
+      }
       return true;
     });
-  }, [events, kind, reportId, fromDate, toDate]);
+  }, [events, kind, reportId, submittedDate, reportCodeMap]);
 
-  const hasFilters = !!(fromDate || toDate || reportId || kind !== "all");
-  const clearFilters = () => { setFromDate(""); setToDate(""); setKind("all"); setReportId(""); };
+  const hasFilters = !!(submittedDate || reportId || kind !== "all");
+  const clearFilters = () => { setSubmittedDate(""); setKind("all"); setReportId(""); };
+
 
   const exportCsv = () => {
     const rows = [
@@ -218,15 +221,12 @@ function RewardsPage() {
 
       <Card className="p-4">
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
           <div className="space-y-1.5">
-            <Label htmlFor="rw-from" className="text-xs">From</Label>
-            <Input id="rw-from" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+            <Label htmlFor="rw-date" className="text-xs">Report submitted on</Label>
+            <Input id="rw-date" type="date" value={submittedDate} onChange={(e) => setSubmittedDate(e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="rw-to" className="text-xs">To</Label>
-            <Input id="rw-to" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-          </div>
+
           <div className="space-y-1.5">
             <Label className="text-xs">Kind</Label>
             <Select value={kind} onValueChange={setKind}>
