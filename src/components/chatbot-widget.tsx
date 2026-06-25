@@ -78,7 +78,7 @@ export function ChatbotWidget() {
               <div>
                 <div className="text-sm font-semibold">{t("chatbot.title")}</div>
                 <div className="font-mono text-[9px] uppercase text-muted-foreground">
-                  Powered by AI
+                  {t("chatbot.poweredBy")}
                 </div>
               </div>
             </div>
