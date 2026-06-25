@@ -113,7 +113,7 @@ function ReportDetail() {
       <div className="flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           <Link to="/reports">
-            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> All reports
+            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> {t("reports.allReportsBack")}
           </Link>
         </Button>
         {canDelete && (
