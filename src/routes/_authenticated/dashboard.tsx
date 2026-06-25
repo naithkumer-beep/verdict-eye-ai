@@ -347,7 +347,7 @@ function StatCard({
         <Icon className={cn("h-4 w-4", accent)} />
       </div>
       <div className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">
-        {value.toLocaleString()}
+        {localNum(value.toLocaleString())}
       </div>
     </Card>
   );
