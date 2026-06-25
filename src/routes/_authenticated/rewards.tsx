@@ -2,7 +2,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Trophy, Sparkles, CheckCircle2, ArrowUpRight, Download, X } from "lucide-react";
+import { Trophy, Sparkles, CheckCircle2, ArrowUpRight, Download, X, Smartphone, ShoppingBag, Bus, Coffee, Gift } from "lucide-react";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -206,7 +207,10 @@ function RewardsPage() {
         )}
       </div>
 
+      <ExchangeSection total={total} />
+
       <Card className="p-4">
+
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
           <div className="space-y-1.5">
             <Label htmlFor="rw-from" className="text-xs">From</Label>
@@ -329,5 +333,77 @@ function RewardsPage() {
         )}
       </Card>
     </div>
+  );
+}
+
+// Demo MMK reward exchange. Purely client-side — no points are deducted from
+// the ledger; intended as a preview of an upcoming redemption feature.
+const EXCHANGE_ITEMS: Array<{
+  id: string;
+  label: string;
+  partner: string;
+  mmk: number;
+  cost: number;
+  icon: typeof Gift;
+  tone: string;
+}> = [
+  { id: "coffee",  label: "Coffee voucher",    partner: "Yangon cafés",      mmk: 5_000,  cost: 50,  icon: Coffee,     tone: "text-amber-500" },
+  { id: "bus",     label: "Bus card top-up",   partner: "YBS",               mmk: 10_000, cost: 100, icon: Bus,        tone: "text-info" },
+  { id: "grocery", label: "Grocery voucher",   partner: "City Mart",         mmk: 20_000, cost: 200, icon: ShoppingBag,tone: "text-success" },
+  { id: "mobile",  label: "Mobile top-up",     partner: "MPT / Ooredoo / Atom", mmk: 50_000, cost: 500, icon: Smartphone, tone: "text-accent" },
+];
+
+function ExchangeSection({ total }: { total: number }) {
+  const onRedeem = (item: (typeof EXCHANGE_ITEMS)[number]) => {
+    const code = `MMK-${item.id.toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    toast.success(`Demo redemption: ${item.mmk.toLocaleString()} MMK ${item.label}`, {
+      description: `Voucher code: ${code}. This is a preview — no points were deducted.`,
+    });
+  };
+
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Gift className="h-4 w-4 text-accent" />
+          <div className="text-sm font-medium">Exchange points for MMK rewards</div>
+        </div>
+        <Badge variant="outline" className="font-mono text-[10px] uppercase">Demo</Badge>
+      </div>
+      <div className="border-b border-border bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
+        Indicative rate · 1 point ≈ 100 MMK. Vouchers are simulated for preview.
+      </div>
+      <div className="grid gap-px bg-border sm:grid-cols-2">
+        {EXCHANGE_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const affordable = total >= item.cost;
+          return (
+            <div key={item.id} className="flex items-center gap-3 bg-card p-4">
+              <div className={`grid h-10 w-10 place-items-center rounded-lg bg-muted ${item.tone}`}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <div className="truncate text-sm font-medium">{item.label}</div>
+                  <span className="font-mono text-[10px] uppercase text-muted-foreground">{item.partner}</span>
+                </div>
+                <div className="mt-0.5 text-xs text-muted-foreground">
+                  <span className="font-mono tabular-nums text-foreground">{item.mmk.toLocaleString()} MMK</span>
+                  <span> · {item.cost} pts</span>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant={affordable ? "default" : "outline"}
+                disabled={!affordable}
+                onClick={() => onRedeem(item)}
+              >
+                {affordable ? "Redeem" : `Need ${item.cost - total}`}
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
   );
 }
