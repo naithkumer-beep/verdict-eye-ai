@@ -27,6 +27,7 @@ import { useAuthStore, useIsModerator } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { localNum } from "@/lib/i18n";
 
 interface NavItem {
   to: string;
