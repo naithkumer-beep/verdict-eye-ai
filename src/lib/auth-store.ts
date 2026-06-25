@@ -29,12 +29,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   bannedDialogOpen: false,
   setBannedDialogOpen: (open) => set({ bannedDialogOpen: open }),
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  session: null,
-  role: null,
-  loading: true,
-  initialized: false,
 
   init: async () => {
     if (get().initialized) return;
