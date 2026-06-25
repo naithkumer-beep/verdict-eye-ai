@@ -191,7 +191,7 @@ function NewReport() {
         .upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) {
         updateStage("upload", "failed", upErr.message);
-        toast.error("Upload failed.");
+        toast.error(t("newReport.uploadFailed"));
         return;
       }
       const { data: signed } = await supabase.storage
@@ -199,10 +199,10 @@ function NewReport() {
         .createSignedUrl(path, 60 * 30);
       const imageUrl = signed?.signedUrl;
       if (!imageUrl) {
-        updateStage("upload", "failed", "Could not sign URL");
+        updateStage("upload", "failed", t("newReport.couldNotSign"));
         return;
       }
-      updateStage("upload", "passed", "Encrypted at rest");
+      updateStage("upload", "passed", t("newReport.encrypted"));
 
       // STAGES 2–6 — AI evaluation via server function
       updateStage("quality", "running");
@@ -233,8 +233,8 @@ function NewReport() {
         prev.map((s) =>
           s.status === "running"
             ? validation.accepted
-              ? { ...s, status: "passed", detail: "Cleared" }
-              : { ...s, status: "idle", detail: "Skipped (earlier stage failed)" }
+              ? { ...s, status: "passed", detail: t("newReport.cleared") }
+              : { ...s, status: "idle", detail: t("newReport.skipped") }
             : s,
         ),
       );
@@ -242,7 +242,7 @@ function NewReport() {
       setResult(validation);
 
       if (validation.accepted) {
-        toast.success("All 6 stages passed — ready to submit.");
+        toast.success(t("newReport.allPassedToast"));
 
         // Insert the report
         setSubmitting(true);
@@ -282,7 +282,7 @@ function NewReport() {
           .single();
 
         if (insErr || !report) {
-          toast.error("Could not save report.");
+          toast.error(t("newReport.couldNotSave"));
           setSubmitting(false);
           return;
         }
@@ -304,17 +304,17 @@ function NewReport() {
         await supabase.from("notifications").insert({
           user_id: user.id,
           type: "report_created",
-          title: "Report verified",
-          message: `${title.trim()} passed all 6 validation stages.`,
+          title: t("newReport.reportVerifiedTitle"),
+          message: t("newReport.reportVerifiedMessage", { title: title.trim() }),
           link: `/reports/${report.id}`,
         });
 
-        toast.success("Report created");
+        toast.success(t("newReport.reportCreated"));
         navigate({ to: "/reports/$id", params: { id: report.id } });
       } else {
         // Clean up the uploaded file since report was rejected
         await supabase.storage.from("report-images").remove([path]);
-        toast.error(validation.rejectionReason ?? "Image rejected");
+        toast.error(validation.rejectionReason ?? t("newReport.rejected"));
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Pipeline failed";
