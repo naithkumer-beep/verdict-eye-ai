@@ -57,6 +57,18 @@ const en = {
     send: "Send",
   },
   reports: {
+    title: "Reports",
+    allReports: "All reports",
+    newReport: "New report",
+    searchByTitle: "Search by title",
+    colTitle: "Title",
+    colCategory: "Category",
+    colStatus: "Status",
+    colConf: "Conf.",
+    colSubmitted: "Submitted",
+    noMatch: "No reports match your filters.",
+    createFirst: "Create your first report",
+    noImg: "No img",
     statusPending: "Pending",
     statusAnalyzing: "Analyzing",
     statusVerified: "Verified",
@@ -74,6 +86,15 @@ const en = {
     reportsOnMap: "Reports on map",
     loadingMap: "Loading map…",
     openReport: "Open report",
+  },
+  categories: {
+    road_damage: "Road Damage",
+    garbage: "Garbage / Waste",
+    street_light: "Street Light",
+    water_drainage: "Water & Drainage",
+    public_safety: "Public Safety",
+    vandalism: "Vandalism",
+    building_hazard: "Building / Construction Hazard",
   },
   admin: {
     queue: "Moderation queue",
@@ -159,6 +180,18 @@ const my = {
     send: "ပို့",
   },
   reports: {
+    title: "အစီရင်ခံစာများ",
+    allReports: "အစီရင်ခံစာအားလုံး",
+    newReport: "အသစ်တင်ရန်",
+    searchByTitle: "ခေါင်းစဉ်ဖြင့်ရှာရန်",
+    colTitle: "ခေါင်းစဉ်",
+    colCategory: "အမျိုးအစား",
+    colStatus: "အခြေအနေ",
+    colConf: "ယုံကြည်မှု",
+    colSubmitted: "တင်သွင်းချိန်",
+    noMatch: "သင်၏စစ်ထုတ်မှုနှင့် ကိုက်ညီသော အစီရင်ခံစာမရှိပါ။",
+    createFirst: "ပထမဆုံးအစီရင်ခံစာဖန်တီးပါ",
+    noImg: "ပုံမရှိ",
     statusPending: "စောင့်ဆိုင်း",
     statusAnalyzing: "စစ်ဆေးနေ",
     statusVerified: "အတည်ပြုပြီး",
@@ -176,6 +209,15 @@ const my = {
     reportsOnMap: "မြေပုံပေါ်ရှိအစီရင်ခံစာများ",
     loadingMap: "မြေပုံဖွင့်နေသည်…",
     openReport: "အစီရင်ခံစာဖွင့်",
+  },
+  categories: {
+    road_damage: "လမ်းပျက်စီးမှု",
+    garbage: "အမှိုက် / စွန့်ပစ်ပစ္စည်း",
+    street_light: "လမ်းမီး",
+    water_drainage: "ရေနှင့်ရေထွက်ပေါက်",
+    public_safety: "ပြည်သူ့ဘေးကင်းရေး",
+    vandalism: "ဖျက်ဆီးမှု",
+    building_hazard: "အဆောက်အအုံ / ဆောက်လုပ်ရေးအန္တရာယ်",
   },
   admin: {
     queue: "စောင့်ကြည့်စာရင်း",
@@ -235,5 +277,31 @@ export function localNum(input: string | number): string {
   return i18n.language === "my" ? toMyanmarDigits(input) : String(input);
 }
 
+
+// Translate an English relative time string ("about 2 hours ago", "5 minutes ago")
+// into Myanmar with Burmese digits when active.
+export function localRelative(en: string): string {
+  if (i18n.language !== "my") return en;
+  let s = en;
+  const map: Array<[RegExp, string]> = [
+    [/\babout\b/gi, "ခန့်"],
+    [/\bless than a minute ago\b/gi, "မိနစ်အနည်းငယ်က"],
+    [/\b1 minute ago\b/gi, "၁ မိနစ်က"],
+    [/\b(\d+) minutes? ago\b/gi, "$1 မိနစ်က"],
+    [/\b1 hour ago\b/gi, "၁ နာရီက"],
+    [/\b(\d+) hours? ago\b/gi, "$1 နာရီက"],
+    [/\b1 day ago\b/gi, "၁ ရက်က"],
+    [/\b(\d+) days? ago\b/gi, "$1 ရက်က"],
+    [/\b1 month ago\b/gi, "၁ လက"],
+    [/\b(\d+) months? ago\b/gi, "$1 လက"],
+    [/\b1 year ago\b/gi, "၁ နှစ်က"],
+    [/\b(\d+) years? ago\b/gi, "$1 နှစ်က"],
+    [/\bin (\d+) (minute|hour|day|month|year)s?\b/gi, "$1 $2 အတွင်း"],
+  ];
+  for (const [re, rep] of map) s = s.replace(re, rep);
+  return toMyanmarDigits(s);
+}
+
 export default i18n;
+
 
