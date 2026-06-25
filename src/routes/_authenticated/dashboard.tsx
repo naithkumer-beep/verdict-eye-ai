@@ -100,7 +100,7 @@ function DashboardPage() {
         const d = new Date(r.created_at);
         return startOfDay(d).getTime() === day.getTime();
       }).length ?? 0;
-    return { date: format(day, "MMM d"), reports: count };
+    return { date: format(day, "MMM d"), reports: count, _count: count };
   });
 
   // Category breakdown
