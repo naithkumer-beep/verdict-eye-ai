@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 import {
   FileText,
   Clock,
