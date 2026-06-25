@@ -663,6 +663,7 @@ function AdminPage() {
 }
 
 function PredictionInspector({ reportId, onClose }: { reportId: string | null; onClose: () => void }) {
+  const { t } = useTranslation();
   const { data: report } = useQuery({
     queryKey: ["admin-report-detail", reportId],
     queryFn: async () => {
@@ -681,37 +682,37 @@ function PredictionInspector({ reportId, onClose }: { reportId: string | null; o
     <Dialog open={!!reportId} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-2xl flex-col gap-0 overflow-hidden p-0">
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4 pr-12">
-          <DialogTitle className="truncate">{r.title ?? "Report"}</DialogTitle>
-          <DialogDescription>AI prediction inputs, confidence scores, and generated payload.</DialogDescription>
+          <DialogTitle className="truncate">{r.title ?? t("admin.inspector.title")}</DialogTitle>
+          <DialogDescription>{t("admin.inspector.sub")}</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <ScoreBox label="Confidence" value={r.confidence_score ?? 0} />
-            <ScoreBox label="Relevance" value={r.relevance_score ?? 0} />
-            <ScoreBox label="Quality" value={r.quality_score ?? 0} />
-            <ScoreBox label="Impact" value={r.impact_score ?? 0} />
+            <ScoreBox label={t("admin.inspector.confidence")} value={r.confidence_score ?? 0} />
+            <ScoreBox label={t("admin.inspector.relevance")} value={r.relevance_score ?? 0} />
+            <ScoreBox label={t("admin.inspector.quality")} value={r.quality_score ?? 0} />
+            <ScoreBox label={t("admin.inspector.impact")} value={r.impact_score ?? 0} />
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <Field label="Category" value={r.category} />
-            <Field label="Status" value={r.status} />
-            <Field label="Priority" value={r.priority ?? "—"} />
-            <Field label="Severity" value={r.severity ?? "—"} />
-            <Field label="Affected population" value={(r.affected_population ?? 0).toLocaleString()} />
-            <Field label="Risk level" value={r.risk_level ?? "—"} />
+            <Field label={t("admin.inspector.category")} value={localCategory(r.category ?? "")} />
+            <Field label={t("admin.inspector.status")} value={r.status} />
+            <Field label={t("admin.inspector.priority")} value={r.priority ?? "—"} />
+            <Field label={t("admin.inspector.severity")} value={r.severity ?? "—"} />
+            <Field label={t("admin.inspector.affectedPop")} value={localNum((r.affected_population ?? 0).toLocaleString())} />
+            <Field label={t("admin.inspector.riskLevel")} value={r.risk_level ?? "—"} />
           </div>
 
           {r.ai_summary && (
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">AI summary</div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{t("admin.inspector.aiSummary")}</div>
               <p className="mt-1 text-sm">{r.ai_summary}</p>
             </div>
           )}
 
           {actions.length > 0 && (
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Recommended actions</div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{t("admin.inspector.recommended")}</div>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
                 {actions.map((a, i) => <li key={i}>{a}</li>)}
               </ul>
@@ -719,14 +720,15 @@ function PredictionInspector({ reportId, onClose }: { reportId: string | null; o
           )}
 
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Raw AI payload</div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{t("admin.inspector.rawPayload")}</div>
             <pre className="mt-1 max-h-64 overflow-auto rounded-md border border-border bg-secondary/40 p-3 text-[11px] leading-relaxed">
-{JSON.stringify(r.ai_analysis ?? { note: "No AI analysis stored" }, null, 2)}
+{JSON.stringify(r.ai_analysis ?? { note: t("admin.inspector.noAi") }, null, 2)}
             </pre>
           </div>
         </div>
       </DialogContent>
     </Dialog>
+
 
   );
 }
