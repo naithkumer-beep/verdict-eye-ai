@@ -41,6 +41,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const role = useAuthStore((s) => s.role);
   const initialized = useAuthStore((s) => s.initialized);
