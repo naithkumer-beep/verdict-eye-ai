@@ -95,9 +95,9 @@ function SettingsPage() {
 
       setAvatarUrl(path);
       setAvatarKey((k) => k + 1);
-      toast.success("Photo updated");
+      toast.success(t("settings.photoUpdated"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
+      toast.error(err instanceof Error ? err.message : t("settings.uploadFailed"));
     } finally {
       setUploadingAvatar(false);
     }
