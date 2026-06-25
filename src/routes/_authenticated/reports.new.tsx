@@ -473,7 +473,7 @@ function NewReport() {
                 />
               </ClientOnly>
               <p className="text-[11px] text-muted-foreground">
-                We auto-capture your live GPS. You can also click anywhere on the map to drop a pin{coords && ` · ${localNum(coords[0].toFixed(5))}, ${localNum(coords[1].toFixed(5))}`}
+                {t("newReport.mapHelp")}{coords && ` · ${localNum(coords[0].toFixed(5))}, ${localNum(coords[1].toFixed(5))}`}
               </p>
             </div>
 
@@ -481,7 +481,7 @@ function NewReport() {
 
 
           <div>
-            <Label>Evidence image</Label>
+            <Label>{t("newReport.evidenceLabel")}</Label>
             <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
               <label className="block cursor-pointer">
                 <div
@@ -499,9 +499,9 @@ function NewReport() {
                   ) : (
                     <div className="text-center">
                       <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
-                      <div className="mt-2 text-sm font-medium">Upload from device</div>
+                      <div className="mt-2 text-sm font-medium">{t("newReport.uploadFromDevice")}</div>
                       <div className="text-xs text-muted-foreground">
-                        JPEG, PNG, WebP • up to 8 MB
+                        {t("newReport.uploadHint")}
                       </div>
                     </div>
                   )}
@@ -518,9 +518,9 @@ function NewReport() {
                   <div className="relative grid place-items-center rounded-lg border-2 border-dashed border-border bg-secondary/30 px-4 py-8 transition-colors hover:border-accent/50">
                     <div className="text-center">
                       <ImageIcon className="mx-auto h-6 w-6 text-muted-foreground" />
-                      <div className="mt-2 text-sm font-medium">Take a photo</div>
+                      <div className="mt-2 text-sm font-medium">{t("newReport.takePhoto")}</div>
                       <div className="text-xs text-muted-foreground">
-                        Use your camera (mobile)
+                        {t("newReport.takePhotoHint")}
                       </div>
                     </div>
                     <input
@@ -546,12 +546,12 @@ function NewReport() {
             {analyzing || submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {submitting ? "Saving report…" : "Running 6-stage validation…"}
+                {submitting ? t("newReport.saving") : t("newReport.running")}
               </>
             ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Validate &amp; submit
+                {t("newReport.validateSubmit")}
               </>
             )}
           </Button>
@@ -561,9 +561,9 @@ function NewReport() {
         <Card className="space-y-4 p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium">Validation pipeline</div>
+              <div className="text-sm font-medium">{t("newReport.pipeline")}</div>
               <div className="text-xs text-muted-foreground">
-                {localNum(completed)}/{localNum(stages.length)} stages cleared
+                {localNum(completed)}/{localNum(stages.length)} {t("newReport.stagesCleared")}
               </div>
             </div>
             <ShieldCheck className="h-4 w-4 text-accent" />
@@ -598,11 +598,11 @@ function NewReport() {
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="font-medium">
-                      {result.accepted ? "All checks passed" : "Image rejected"}
+                      {result.accepted ? t("newReport.allPassed") : t("newReport.rejected")}
                     </div>
                     <div className="mt-0.5 text-xs opacity-90">
                       {result.accepted
-                        ? `Confidence ${result.scores.confidence} · Relevance ${result.scores.relevance} · Quality ${result.scores.quality}`
+                        ? `${t("reports.confidence")} ${localNum(result.scores.confidence)} · ${t("reports.relevance")} ${localNum(result.scores.relevance)} · ${t("reports.quality")} ${localNum(result.scores.quality)}`
                         : result.rejectionReason}
                     </div>
                   </div>
@@ -613,10 +613,9 @@ function NewReport() {
 
           <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground">
             <div className="mb-1 flex items-center gap-1.5 font-medium text-foreground">
-              <ImageIcon className="h-3 w-3" /> What we never do
+              <ImageIcon className="h-3 w-3" /> {t("newReport.neverDoTitle")}
             </div>
-            We never analyze first and validate later. The image is only stored
-            and scored if all 6 stages pass.
+            {t("newReport.neverDoBody")}
           </div>
         </Card>
       </div>
