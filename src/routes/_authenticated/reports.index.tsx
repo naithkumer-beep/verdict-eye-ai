@@ -94,15 +94,15 @@ function ReportsList() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            All reports
+            {t("reports.allReports")}
           </div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Reports
+            {t("reports.title")}
           </h1>
         </div>
         <Button asChild>
           <Link to="/reports/new">
-            <Plus className="mr-1 h-4 w-4" /> New report
+            <Plus className="mr-1 h-4 w-4" /> {t("reports.newReport")}
           </Link>
         </Button>
       </div>
@@ -114,7 +114,7 @@ function ReportsList() {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search by title"
+              placeholder={t("reports.searchByTitle")}
               className="h-8 pl-8 text-sm"
             />
           </div>
@@ -123,12 +123,12 @@ function ReportsList() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="analyzing">Analyzing</SelectItem>
-              <SelectItem value="verified">Verified</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
+              <SelectItem value="all">{t("reports.allStatuses")}</SelectItem>
+              <SelectItem value="pending">{t("reports.statusPending")}</SelectItem>
+              <SelectItem value="analyzing">{t("reports.statusAnalyzing")}</SelectItem>
+              <SelectItem value="verified">{t("reports.statusVerified")}</SelectItem>
+              <SelectItem value="rejected">{t("reports.statusRejected")}</SelectItem>
+              <SelectItem value="resolved">{t("reports.statusResolved")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={category} onValueChange={setCategory}>
@@ -136,10 +136,10 @@ function ReportsList() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">{t("reports.allCategories")}</SelectItem>
               {REPORT_CATEGORIES.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
-                  {c.label}
+                  {t(`categories.${c.value}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -149,23 +149,23 @@ function ReportsList() {
 
       <Card className="overflow-hidden p-0">
         <div className="grid grid-cols-12 gap-3 border-b border-border bg-secondary/40 px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          <div className="col-span-5">Title</div>
-          <div className="col-span-2">Category</div>
-          <div className="col-span-2">Status</div>
-          <div className="col-span-1">Conf.</div>
-          <div className="col-span-2 text-right">Submitted</div>
+          <div className="col-span-5">{t("reports.colTitle")}</div>
+          <div className="col-span-2">{t("reports.colCategory")}</div>
+          <div className="col-span-2">{t("reports.colStatus")}</div>
+          <div className="col-span-1">{t("reports.colConf")}</div>
+          <div className="col-span-2 text-right">{t("reports.colSubmitted")}</div>
         </div>
         <div className="divide-y divide-border">
           {isLoading && (
-            <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>
+            <div className="p-10 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
           )}
           {!isLoading && filtered.length === 0 && (
             <div className="p-14 text-center">
               <div className="text-sm text-muted-foreground">
-                No reports match your filters.
+                {t("reports.noMatch")}
               </div>
               <Button asChild variant="outline" size="sm" className="mt-4">
-                <Link to="/reports/new">Create your first report</Link>
+                <Link to="/reports/new">{t("reports.createFirst")}</Link>
               </Button>
             </div>
           )}
@@ -185,21 +185,21 @@ function ReportsList() {
                 </div>
               </div>
               <div className="col-span-2 truncate text-xs text-muted-foreground">
-                {getCategoryLabel(r.category)}
+                {t(`categories.${r.category}`, { defaultValue: r.category })}
               </div>
               <div className="col-span-2">
                 <Badge
                   variant="outline"
                   className={`font-mono text-[10px] uppercase ${STATUS_COLOR[r.status] ?? ""}`}
                 >
-                  {r.status}
+                  {t(`reports.status${r.status.charAt(0).toUpperCase()}${r.status.slice(1)}`, { defaultValue: r.status })}
                 </Badge>
               </div>
               <div className="col-span-1 font-mono text-xs tabular-nums">
-                {r.confidence_score ?? 0}%
+                {localNum(r.confidence_score ?? 0)}%
               </div>
               <div className="col-span-2 text-right text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                {localRelative(formatDistanceToNow(new Date(r.created_at), { addSuffix: true }))}
               </div>
             </Link>
           ))}
