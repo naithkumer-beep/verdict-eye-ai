@@ -1,6 +1,7 @@
 // Public landing page — explains what CivicLens AI does for Yangon residents.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   ShieldCheck,
@@ -186,6 +187,7 @@ function LandingPage() {
               ["2", MapIcon, "Pin the location", "We auto-capture your GPS, or you drop a pin anywhere on the Yangon map."],
               ["3", Building2, "Auto-routed", "Your report is automatically assigned to the right authority — YCDC, YESC, or Police."],
               ["4", CheckCircle2, "Tracked & resolved", "Follow the status live. When an admin marks it resolved, you get notified."],
+            
             ] as const).map(([n, Icon, title, body]) => (
               <li
                 key={n}
@@ -195,7 +197,7 @@ function LandingPage() {
                   <div className="grid h-8 w-8 place-items-center rounded-md border border-border bg-background font-mono text-sm font-semibold tabular-nums">
                     {n}
                   </div>
-                  <Icon className="h-5 w-5 text-accent" />
+                  <Icon className={cn("h-5 w-5", n === "4" ? "text-green" : "text-accent")} />
                 </div>
                 <div className="font-medium">{title}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{body}</div>

@@ -196,12 +196,19 @@ function RewardsPage() {
               <div className="mt-1 text-2xl font-semibold">{submitted}</div>
               <div className="text-xs text-muted-foreground">+{submitted * 30} pts earned</div>
             </Card>
-            <Card className="p-5">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                Reports resolved
+            <Card className="border-green/20 bg-gradient-to-br from-green/5 via-card to-card p-5">
+              <div className="flex items-center gap-2">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-green/15 text-green">
+                  <CheckCircle2 className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Reports resolved
+                  </div>
+                  <div className="text-2xl font-semibold text-green">{resolved}</div>
+                </div>
               </div>
-              <div className="mt-1 text-2xl font-semibold">{resolved}</div>
-              <div className="text-xs text-muted-foreground">+{resolved * 50} pts earned</div>
+              <div className="mt-2 text-xs text-muted-foreground">+{resolved * 50} pts earned</div>
             </Card>
           </>
         )}

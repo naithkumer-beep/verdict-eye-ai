@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 import {
   FileText,
   Clock,
@@ -174,6 +175,7 @@ function DashboardPage() {
           value={stats.verified}
           icon={CheckCircle2}
           accent="text-success"
+          tint="bg-success/5 border-success/20"
         />
         <StatCard
           label="Rejected"
@@ -326,19 +328,21 @@ function StatCard({
   value,
   icon: Icon,
   accent,
+  tint,
 }: {
   label: string;
   value: number;
   icon: typeof FileText;
   accent: string;
+  tint?: string;
 }) {
   return (
-    <Card className="p-5">
+    <Card className={cn("p-5", tint)}>
       <div className="flex items-start justify-between">
         <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
           {label}
         </div>
-        <Icon className={`h-4 w-4 ${accent}`} />
+        <Icon className={cn("h-4 w-4", accent)} />
       </div>
       <div className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">
         {value.toLocaleString()}
