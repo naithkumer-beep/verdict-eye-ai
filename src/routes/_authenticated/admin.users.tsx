@@ -328,6 +328,27 @@ function AdminUsersPage() {
                 >
                   <ShieldCheck className="h-3 w-3" /> Admin
                 </Button>
+                {u.banned ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1 border-success/40 text-xs text-success hover:bg-success/10"
+                    disabled={u.id === me?.id}
+                    onClick={() => setBanTarget(u)}
+                  >
+                    <CheckCircle2 className="h-3 w-3" /> Unban
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1 border-destructive/40 text-xs text-destructive hover:bg-destructive/10"
+                    disabled={u.id === me?.id || u.role === "admin"}
+                    onClick={() => setBanTarget(u)}
+                  >
+                    <Ban className="h-3 w-3" /> Ban
+                  </Button>
+                )}
               </div>
             </div>
           ))}
