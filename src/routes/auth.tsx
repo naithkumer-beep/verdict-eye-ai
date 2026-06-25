@@ -3,19 +3,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { z } from "zod";
-import { Loader2, Mail, Lock, Ban } from "lucide-react";
+import { Loader2, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { BrandMark } from "@/components/brand-mark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,7 +47,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [bannedOpen, setBannedOpen] = useState(false);
+  const setBannedDialogOpen = useAuthStore((s) => s.setBannedDialogOpen);
 
   const isBanError = (msg: string) =>
     /ban(ned)?|user_banned/i.test(msg);
@@ -117,7 +108,7 @@ function AuthPage() {
       setLoading(false);
       if (error) {
         if (isBanError(error.message)) {
-          setBannedOpen(true);
+          setBannedDialogOpen(true);
         } else {
           toast.error(error.message);
         }
@@ -137,7 +128,7 @@ function AuthPage() {
       setLoading(false);
       const msg = result.error.message ?? "Sign in failed";
       if (isBanError(msg)) {
-        setBannedOpen(true);
+        setBannedDialogOpen(true);
       } else {
         toast.error(msg);
       }
@@ -316,26 +307,6 @@ function AuthPage() {
           </div>
         </motion.div>
       </main>
-
-      <AlertDialog open={bannedOpen} onOpenChange={setBannedOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-destructive/40 bg-destructive/10">
-              <Ban className="h-6 w-6 text-destructive" />
-            </div>
-            <AlertDialogTitle className="text-center">Your account has been banned</AlertDialogTitle>
-            <AlertDialogDescription className="text-center">
-              An administrator has banned this account. You cannot sign in or use the platform.
-              If you believe this is a mistake, please contact support to appeal.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setBannedOpen(false)} className="w-full">
-              Understood
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

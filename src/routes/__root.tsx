@@ -134,6 +134,10 @@ function RootShell({ children }: { children: ReactNode }) {
 
 import { Toaster } from "sonner";
 import { useAuthStore } from "@/lib/auth-store";
+import { BannedDialog } from "@/components/banned-dialog";
+
+const isBanMessage = (msg: string | undefined | null) =>
+  !!msg && /ban(ned)?|user_banned/i.test(msg);
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -163,10 +167,42 @@ function RootComponent() {
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
 
+  // Background ban detection: revalidate session with Supabase Auth.
+  // If the account was banned by an admin, sign the user out and show
+  // the banned popup immediately.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let cancelled = false;
+
+    const check = async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) return;
+      const { data, error } = await supabase.auth.getUser();
+      if (cancelled) return;
+      const banned = isBanMessage(error?.message) || (data?.user as { banned?: boolean } | null)?.banned === true;
+      if (banned) {
+        await supabase.auth.signOut().catch(() => {});
+        useAuthStore.getState().setBannedDialogOpen(true);
+      }
+    };
+
+    void check();
+    const interval = window.setInterval(check, 30_000);
+    const onFocus = () => void check();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster position="top-right" richColors closeButton />
+      <BannedDialog />
     </QueryClientProvider>
   );
 }
+
