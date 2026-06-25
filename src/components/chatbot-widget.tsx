@@ -52,7 +52,7 @@ export function ChatbotWidget() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Chat failed";
       toast.error(msg);
-      setMessages([...next, { role: "assistant", content: "Sorry, I couldn't answer that." }]);
+      setMessages([...next, { role: "assistant", content: t("chatbot.failed") }]);
     } finally {
       setSending(false);
     }
