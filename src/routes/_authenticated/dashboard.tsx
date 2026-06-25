@@ -109,7 +109,7 @@ function DashboardPage() {
       acc[r.category] = (acc[r.category] ?? 0) + 1;
       return acc;
     }, {}),
-  ).map(([k, v]) => ({ category: getCategoryLabel(k), count: v }));
+  ).map(([k, v]) => ({ category: localCategory(k), count: v }));
 
   const avgConfidence =
     reports && reports.length
