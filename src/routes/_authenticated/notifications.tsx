@@ -61,14 +61,14 @@ function NotificationsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            Activity
+            {t("notifications.activity")}
           </div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Notifications
+            {t("notifications.title")}
           </h1>
         </div>
         <Button variant="outline" size="sm" onClick={markAllRead}>
-          <CheckCheck className="mr-1 h-3.5 w-3.5" /> Mark all read
+          <CheckCheck className="mr-1 h-3.5 w-3.5" /> {t("notifications.markAllRead")}
         </Button>
       </div>
 
@@ -77,7 +77,7 @@ function NotificationsPage() {
           <div className="p-14 text-center">
             <Bell className="mx-auto h-6 w-6 text-muted-foreground" />
             <div className="mt-3 text-sm text-muted-foreground">
-              No notifications yet.
+              {t("notifications.empty")}
             </div>
           </div>
         ) : (
@@ -95,7 +95,7 @@ function NotificationsPage() {
                     )}
                   </div>
                   <div className="shrink-0 text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                    {localRelative(formatDistanceToNow(new Date(n.created_at), { addSuffix: true }))}
                   </div>
                 </div>
               );
