@@ -40,6 +40,7 @@ function ReportsList() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [category, setCategory] = useState<string>("all");
+  const [scope, setScope] = useState<string>("all");
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["reports-list", user?.id],
