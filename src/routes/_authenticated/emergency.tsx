@@ -15,16 +15,15 @@ interface Hotline {
   icon: typeof Phone;
   color: string;
   number: string;
-  description: string;
 }
 
 const HOTLINES: Hotline[] = [
-  { key: "police", icon: Shield, color: "text-blue-500", number: "199", description: "Myanmar Police — life-threatening emergencies" },
-  { key: "fire", icon: Flame, color: "text-orange-500", number: "191", description: "Myanmar Fire Services Department" },
-  { key: "ambulance", icon: Stethoscope, color: "text-red-500", number: "192", description: "Public ambulance service" },
-  { key: "ycdc", icon: Building2, color: "text-emerald-500", number: "1888", description: "YCDC city services hotline" },
-  { key: "electricity", icon: Zap, color: "text-yellow-500", number: "1910", description: "YESC — Yangon Electricity Supply Corporation" },
-  { key: "redCross", icon: Heart, color: "text-pink-500", number: "+95-1-383683", description: "Myanmar Red Cross Society — Yangon HQ" },
+  { key: "police", icon: Shield, color: "text-blue-500", number: "199" },
+  { key: "fire", icon: Flame, color: "text-orange-500", number: "191" },
+  { key: "ambulance", icon: Stethoscope, color: "text-red-500", number: "192" },
+  { key: "ycdc", icon: Building2, color: "text-emerald-500", number: "1888" },
+  { key: "electricity", icon: Zap, color: "text-yellow-500", number: "1910" },
+  { key: "redCross", icon: Heart, color: "text-pink-500", number: "+95-1-383683" },
 ];
 
 function EmergencyPage() {
