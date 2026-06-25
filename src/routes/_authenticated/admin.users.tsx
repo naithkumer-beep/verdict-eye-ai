@@ -20,7 +20,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin } from "@/lib/auth-store";
 import { AvatarDisplay } from "@/components/avatar-display";
-import { suggestUserRole, listAdminUsers } from "@/lib/admin-ai.functions";
+import { suggestUserRole, listAdminUsers, setUserBanned } from "@/lib/admin-ai.functions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
