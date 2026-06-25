@@ -155,6 +155,9 @@
   --success: oklch(0.7 0.176 152);
   --success-foreground: oklch(0.09 0 0);
 
+  --green: oklch(0.6 0.2 145);
+  --green-foreground: oklch(0.985 0 0);
+
   --warning: oklch(0.82 0.166 70);
   --warning-foreground: oklch(0.09 0 0);
 
