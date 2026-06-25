@@ -41,6 +41,8 @@ interface UserRow {
   points: number;
   reports_total: number;
   reports_resolved: number;
+  banned: boolean;
+  banned_until: string | null;
 }
 
 interface Suggestion {
