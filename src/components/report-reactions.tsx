@@ -49,7 +49,7 @@ export function ReportReactions({ reportId }: { reportId: string }) {
 
   const react = async (kind: "like" | "dislike") => {
     if (!user) {
-      toast.error("Sign in to react");
+      toast.error(t("reactions.signIn"));
       return;
     }
     if (mine === kind) {
