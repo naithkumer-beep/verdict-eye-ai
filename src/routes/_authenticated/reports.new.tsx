@@ -37,6 +37,7 @@ import { validateReportImage, type ValidationResult } from "@/lib/ai-validation.
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { localNum } from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 
 
