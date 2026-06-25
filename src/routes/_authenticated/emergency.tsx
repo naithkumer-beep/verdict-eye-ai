@@ -4,6 +4,7 @@ import { Phone, Flame, Heart, Building2, Zap, Shield, Stethoscope } from "lucide
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { localNum } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/emergency")({
   head: () => ({ meta: [{ title: "Emergency — CivicLens AI" }] }),
