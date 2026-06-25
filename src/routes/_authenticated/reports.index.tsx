@@ -1,7 +1,7 @@
 // Reports list — table view with filters.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -49,25 +49,32 @@ function ReportsList() {
       if (error) throw error;
       const rows = data ?? [];
       const ids = rows.map((r) => r.id);
-      if (!ids.length) return rows.map((r) => ({ ...r, thumbUrl: null as string | null }));
+      if (!ids.length) return rows.map((r) => ({ ...r, thumbUrls: [] as string[] }));
       const { data: imgs } = await supabase
         .from("report_images")
         .select("report_id,storage_path")
         .in("report_id", ids);
-      const firstByReport = new Map<string, string>();
+      const pathsByReport = new Map<string, string[]>();
       for (const img of imgs ?? []) {
-        if (!firstByReport.has(img.report_id)) firstByReport.set(img.report_id, img.storage_path);
+        const arr = pathsByReport.get(img.report_id) ?? [];
+        arr.push(img.storage_path);
+        pathsByReport.set(img.report_id, arr);
       }
-      const signed = await Promise.all(
-        Array.from(firstByReport.entries()).map(async ([rid, path]) => {
-          const { data: s } = await supabase.storage
-            .from("report-images")
-            .createSignedUrl(path, 60 * 60);
-          return [rid, s?.signedUrl ?? null] as const;
+      const entries = await Promise.all(
+        Array.from(pathsByReport.entries()).map(async ([rid, paths]) => {
+          const urls = await Promise.all(
+            paths.slice(0, 8).map(async (p) => {
+              const { data: s } = await supabase.storage
+                .from("report-images")
+                .createSignedUrl(p, 60 * 60);
+              return s?.signedUrl ?? null;
+            }),
+          );
+          return [rid, urls.filter((u): u is string => !!u)] as const;
         }),
       );
-      const urlByReport = new Map(signed);
-      return rows.map((r) => ({ ...r, thumbUrl: urlByReport.get(r.id) ?? null }));
+      const urlsByReport = new Map(entries);
+      return rows.map((r) => ({ ...r, thumbUrls: urlsByReport.get(r.id) ?? [] }));
     },
     enabled: !!user,
   });
@@ -167,18 +174,8 @@ function ReportsList() {
               className="grid grid-cols-12 items-center gap-3 px-4 py-4 text-sm transition-colors hover:bg-muted/50"
             >
               <div className="col-span-5 flex min-w-0 items-start gap-4">
-                {r.thumbUrl ? (
-                  <img
-                    src={r.thumbUrl}
-                    alt=""
-                    loading="lazy"
-                    className="h-20 w-20 shrink-0 rounded-lg border border-border object-cover"
-                  />
-                ) : (
-                  <div className="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-dashed border-border text-[10px] text-muted-foreground">
-                    No img
-                  </div>
-                )}
+                <HoverCarousel urls={r.thumbUrls} />
+
                 <div className="min-w-0 flex-1 py-1">
                   <div className="truncate font-medium">{r.title}</div>
                   <div className="line-clamp-2 text-xs text-muted-foreground">{r.description}</div>
@@ -205,6 +202,68 @@ function ReportsList() {
           ))}
         </div>
       </Card>
+    </div>
+  );
+}
+
+function HoverCarousel({ urls }: { urls: string[] }) {
+  const [idx, setIdx] = useState(0);
+  const [hover, setHover] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (hover && urls.length > 1) {
+      timerRef.current = setInterval(() => {
+        setIdx((i) => (i + 1) % urls.length);
+      }, 900);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = null;
+    };
+  }, [hover, urls.length]);
+
+  useEffect(() => {
+    if (!hover) setIdx(0);
+  }, [hover]);
+
+  if (!urls.length) {
+    return (
+      <div className="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-dashed border-border text-[10px] text-muted-foreground">
+        No img
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      {urls.map((u, i) => (
+        <img
+          key={u}
+          src={u}
+          alt=""
+          loading="lazy"
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
+            i === idx ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+      {urls.length > 1 && (
+        <div className="absolute inset-x-1 bottom-1 flex justify-center gap-0.5">
+          {urls.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1 w-1 rounded-full transition-colors ${
+                i === idx ? "bg-white" : "bg-white/40"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
