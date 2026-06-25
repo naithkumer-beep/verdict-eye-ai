@@ -111,8 +111,7 @@ function RewardsPage() {
 
 
   // Filters
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [submittedDate, setSubmittedDate] = useState("");
   const [kind, setKind] = useState<string>("all");
   const [reportId, setReportId] = useState("");
 
@@ -125,15 +124,19 @@ function RewardsPage() {
         const code = (reportCodeMap[e.report_id ?? ""] ?? "").toLowerCase();
         if (!rid.includes(q) && !code.includes(q)) return false;
       }
-      const t = new Date(e.created_at).getTime();
-      if (fromDate && t < new Date(fromDate).getTime()) return false;
-      if (toDate && t > new Date(toDate).getTime() + 86_399_999) return false;
+      if (submittedDate) {
+        if (e.kind !== "report_created") return false;
+        const d = new Date(e.created_at);
+        const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        if (ymd !== submittedDate) return false;
+      }
       return true;
     });
-  }, [events, kind, reportId, fromDate, toDate]);
+  }, [events, kind, reportId, submittedDate, reportCodeMap]);
 
-  const hasFilters = !!(fromDate || toDate || reportId || kind !== "all");
-  const clearFilters = () => { setFromDate(""); setToDate(""); setKind("all"); setReportId(""); };
+  const hasFilters = !!(submittedDate || reportId || kind !== "all");
+  const clearFilters = () => { setSubmittedDate(""); setKind("all"); setReportId(""); };
+
 
   const exportCsv = () => {
     const rows = [
