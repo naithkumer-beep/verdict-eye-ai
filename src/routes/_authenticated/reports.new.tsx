@@ -68,6 +68,7 @@ const INITIAL_STAGES: PipelineStage[] = [
 ];
 
 function NewReport() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const runValidation = useServerFn(validateReportImage);
