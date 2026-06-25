@@ -108,7 +108,7 @@ function AuthPage() {
       setLoading(false);
       if (error) {
         if (isBanError(error.message)) {
-          setBannedOpen(true);
+          setBannedDialogOpen(true);
         } else {
           toast.error(error.message);
         }
@@ -128,7 +128,7 @@ function AuthPage() {
       setLoading(false);
       const msg = result.error.message ?? "Sign in failed";
       if (isBanError(msg)) {
-        setBannedOpen(true);
+        setBannedDialogOpen(true);
       } else {
         toast.error(msg);
       }
