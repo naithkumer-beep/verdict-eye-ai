@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, useIsAdmin } from "@/lib/auth-store";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { localRelative } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/audit")({
   head: () => ({ meta: [{ title: "Audit log — CivicLens AI" }] }),
