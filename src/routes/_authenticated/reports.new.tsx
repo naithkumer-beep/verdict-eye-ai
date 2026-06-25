@@ -332,13 +332,13 @@ function NewReport() {
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div>
         <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-          New report
+          {t("newReport.eyebrow")}
         </div>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-          Submit a report
+          {t("newReport.heading")}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Every image clears 6 validation stages before analysis.
+          {t("newReport.subheading")}
         </p>
       </div>
 
@@ -347,28 +347,28 @@ function NewReport() {
         <Card className="space-y-4 p-5 lg:col-span-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">{t("newReport.titleLabel")}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Large pothole on Main Street"
+                placeholder={t("newReport.titlePlaceholder")}
                 maxLength={120}
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="desc">Description</Label>
+              <Label htmlFor="desc">{t("newReport.descLabel")}</Label>
               <Textarea
                 id="desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what you see and the conditions."
+                placeholder={t("newReport.descPlaceholder")}
                 rows={4}
                 maxLength={1000}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Category</Label>
+              <Label>{t("newReport.categoryLabel")}</Label>
               <Select value={category} onValueChange={(v) => setCategory(v as CategoryValue)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -376,21 +376,21 @@ function NewReport() {
                 <SelectContent>
                   {REPORT_CATEGORIES.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                      {t(`categories.${c.value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="dept">Department</Label>
+              <Label htmlFor="dept">{t("newReport.deptLabel")}</Label>
               <Select value={department} onValueChange={setDepartment}>
                 <SelectTrigger id="dept">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="auto">
-                    Auto · {resolvedDept?.name_en ?? "—"}
+                    {t("newReport.deptAuto")} · {resolvedDept?.name_en ?? "—"}
                   </SelectItem>
                   {departments.map((d) => (
                     <SelectItem key={d.code} value={d.code}>
@@ -400,32 +400,32 @@ function NewReport() {
                 </SelectContent>
               </Select>
               <p className="text-[11px] text-muted-foreground">
-                Auto-routes by category. Admins can override on review.
+                {t("newReport.deptHelp")}
               </p>
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="loc">Location (Yangon street / township)</Label>
+              <Label htmlFor="loc">{t("newReport.locLabel")}</Label>
               <Input
                 id="loc"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Pyay Road, Kamayut Township, Yangon"
+                placeholder={t("newReport.locPlaceholder")}
                 maxLength={200}
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-1.5">
-                  Pin on map (Yangon)
+                  {t("newReport.pinLabel")}
                   {locating && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-info/10 px-2 py-0.5 font-mono text-[10px] uppercase text-info">
-                      <Loader2 className="h-2.5 w-2.5 animate-spin" /> Locating…
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" /> {t("newReport.locating")}
                     </span>
                   )}
                   {coords && !locating && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 font-mono text-[10px] uppercase text-success">
-                      ● Live GPS
+                      ● {t("newReport.liveGps")}
                     </span>
                   )}
                 </Label>
@@ -437,7 +437,7 @@ function NewReport() {
                     disabled={locating}
                     onClick={() => {
                       if (!navigator.geolocation) {
-                        toast.error("Geolocation not supported");
+                        toast.error(t("newReport.geoNotSupported"));
                         return;
                       }
                       setLocating(true);
@@ -445,26 +445,26 @@ function NewReport() {
                         (pos) => {
                           setCoords([pos.coords.latitude, pos.coords.longitude]);
                           setLocating(false);
-                          toast.success("Live location updated");
+                          toast.success(t("newReport.liveUpdated"));
                         },
                         () => {
                           setLocating(false);
-                          toast.error("Could not get your location");
+                          toast.error(t("newReport.couldNotLocation"));
                         },
                         { enableHighAccuracy: true, timeout: 8000 },
                       );
                     }}
                   >
-                    Use my live location
+                    {t("newReport.useMyLive")}
                   </Button>
                   {coords && (
                     <Button type="button" variant="ghost" size="sm" onClick={() => setCoords(null)}>
-                      Clear
+                      {t("newReport.clear")}
                     </Button>
                   )}
                 </div>
               </div>
-              <ClientOnly fallback={<div className="grid h-[260px] place-items-center rounded-lg border border-border text-xs text-muted-foreground">Loading map…</div>}>
+              <ClientOnly fallback={<div className="grid h-[260px] place-items-center rounded-lg border border-border text-xs text-muted-foreground">{t("reports.loadingMap")}</div>}>
                 <YangonMap
                   height="260px"
                   pickable
