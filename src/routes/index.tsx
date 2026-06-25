@@ -1,6 +1,7 @@
 // Public landing page — explains what CivicLens AI does for Yangon residents.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   ShieldCheck,
