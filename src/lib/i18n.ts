@@ -94,7 +94,14 @@ const en = {
     uploadAvatar: "Upload photo",
     removeAvatar: "Remove",
   },
+  banned: {
+    title: "Your account is banned by the admin.",
+    description:
+      "Your account has been banned by an administrator. You have been signed out and can no longer access the platform. If you believe this is a mistake, please contact support to appeal.",
+    action: "Understood",
+  },
 };
+
 
 
 const my = {
