@@ -624,6 +624,7 @@ function NewReport() {
 }
 
 function StageRow({ stage, index }: { stage: PipelineStage; index: number }) {
+  const { t } = useTranslation();
   const Icon =
     stage.status === "passed"
       ? CheckCircle2
@@ -641,6 +642,9 @@ function StageRow({ stage, index }: { stage: PipelineStage; index: number }) {
           ? "text-accent"
           : "text-muted-foreground";
 
+  const name = t(`newReport.stages.${stage.key}`, { defaultValue: stage.name });
+  const desc = t(`newReport.stages.${stage.key}Desc`, { defaultValue: stage.description });
+
   return (
     <div
       className={cn(
@@ -649,15 +653,15 @@ function StageRow({ stage, index }: { stage: PipelineStage; index: number }) {
       )}
     >
       <div className="grid h-6 w-6 shrink-0 place-items-center rounded-md border border-border bg-background font-mono text-[10px] font-semibold tabular-nums">
-        {index}
+        {localNum(index)}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-medium">{stage.name}</span>
+          <span className="truncate text-sm font-medium">{name}</span>
           {Icon && <Icon className={cn("h-3.5 w-3.5 shrink-0", color, stage.status === "running" && "animate-spin")} />}
         </div>
         <div className="truncate text-[11px] text-muted-foreground">
-          {stage.detail ?? stage.description}
+          {stage.detail ?? desc}
         </div>
       </div>
     </div>
