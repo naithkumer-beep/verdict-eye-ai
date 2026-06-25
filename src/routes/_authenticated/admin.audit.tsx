@@ -24,6 +24,7 @@ const ACTION_COLOR: Record<string, string> = {
 };
 
 function AuditPage() {
+  const { t } = useTranslation();
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
   const role = useAuthStore((s) => s.role);
