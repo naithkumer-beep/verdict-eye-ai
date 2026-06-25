@@ -23,6 +23,9 @@ import { AvatarDisplay } from "@/components/avatar-display";
 import { suggestUserRole, listAdminUsers, setUserBanned } from "@/lib/admin-ai.functions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { localNum, localRelative } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   head: () => ({ meta: [{ title: "User management — CivicLens AI" }] }),
@@ -90,6 +93,8 @@ async function sendRoleChangeEmail(input: {
 }
 
 function AdminUsersPage() {
+  const { t } = useTranslation();
+
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
   const role = useAuthStore((s) => s.role);
