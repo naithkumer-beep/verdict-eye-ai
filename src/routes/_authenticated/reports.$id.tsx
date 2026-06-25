@@ -134,7 +134,7 @@ function ReportDetail() {
                 {report.status}
               </Badge>
               <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                {getCategoryLabel(report.category)}
+                {localCategory(report.category)}
               </Badge>
               {report.severity && (
                 <Badge variant="outline" className="font-mono text-[10px] uppercase">
