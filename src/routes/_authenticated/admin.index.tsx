@@ -341,53 +341,55 @@ function AdminPage() {
           <ShieldCheck className="h-5 w-5 text-accent" />
           <div>
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-              Admin Panel
+              {t("admin.eyebrow")}
               {isAdmin && (
                 <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                  <Radio className="mr-1 h-3 w-3 animate-pulse text-success" /> Live
+                  <Radio className="mr-1 h-3 w-3 animate-pulse text-success" /> {t("admin.live")}
                 </Badge>
               )}
             </div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Operations, KPIs &amp; AI insights
+              {t("admin.heading")}
             </h1>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Manage reports and review executive metrics in one place.
+              {t("admin.sub")}
             </p>
           </div>
         </div>
         {isAdmin && (
           <div className="flex flex-wrap gap-2">
             <Button size="sm" onClick={refreshInsights}>
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Refresh AI
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> {t("admin.refreshAi")}
             </Button>
             <Button variant="outline" size="sm" onClick={escalate}>
-              <Zap className="mr-1.5 h-3.5 w-3.5" /> Run escalation
+              <Zap className="mr-1.5 h-3.5 w-3.5" /> {t("admin.runEscalation")}
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link to="/admin/users">
-                <Users className="mr-1.5 h-3.5 w-3.5" /> Users
+                <Users className="mr-1.5 h-3.5 w-3.5" /> {t("admin.usersBtn")}
               </Link>
             </Button>
           </div>
         )}
       </div>
 
+
       {isAdmin && (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Kpi icon={Activity} label="Open issues" value={openReports.length} tone="info" />
-            <Kpi icon={AlertTriangle} label="Critical" value={criticalCount} tone="destructive" />
-            <Kpi icon={Clock} label="Overdue" value={overdueCount} tone="warning" />
-            <Kpi icon={DollarSign} label="Est. cost (MMK)" value={totalCost.toLocaleString()} tone="success" />
+            <Kpi icon={Activity} label={t("admin.openIssues")} value={localNum(openReports.length)} tone="info" />
+            <Kpi icon={AlertTriangle} label={t("admin.critical")} value={localNum(criticalCount)} tone="destructive" />
+            <Kpi icon={Clock} label={t("admin.overdue")} value={localNum(overdueCount)} tone="warning" />
+            <Kpi icon={DollarSign} label={t("admin.estCost")} value={localNum(totalCost.toLocaleString())} tone="success" />
           </div>
+
 
           <div className="grid gap-5 lg:grid-cols-2">
             <Card className="p-5">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-medium">Department performance</h2>
+                <h2 className="text-sm font-medium">{t("admin.deptPerf")}</h2>
                 <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                  {deptStats.length}
+                  {localNum(deptStats.length)}
                 </Badge>
               </div>
               <div className="space-y-2.5">
@@ -396,7 +398,7 @@ function AdminPage() {
                     <div className="flex items-center justify-between text-xs">
                       <span className="truncate">{d.name}</span>
                       <span className="tabular-nums text-muted-foreground">
-                        {d.resolved}/{d.total} · {d.pct}%
+                        {localNum(d.resolved)}/{localNum(d.total)} · {localNum(d.pct)}%
                       </span>
                     </div>
                     <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
@@ -408,20 +410,22 @@ function AdminPage() {
                   </div>
                 ))}
                 {deptStats.length === 0 && (
-                  <div className="text-sm text-muted-foreground">No department data yet.</div>
+                  <div className="text-sm text-muted-foreground">{t("admin.noDeptData")}</div>
                 )}
               </div>
+
             </Card>
 
             <Card className="p-5">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-accent" />
-                <h2 className="text-sm font-medium">AI predictions</h2>
+                <h2 className="text-sm font-medium">{t("admin.aiPredictions")}</h2>
               </div>
               {insights.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No insights yet. Click <strong>Refresh AI</strong> to generate.
+                  {t("admin.noInsights")} <strong>{t("admin.refreshAiInline")}</strong> {t("admin.toGenerate")}
                 </p>
+
               ) : (
                 <ul className="space-y-3">
                   {insights.map((ins, i) => (
@@ -437,17 +441,18 @@ function AdminPage() {
 
           <Card className="overflow-hidden p-0">
             <div className="border-b border-border p-4">
-              <h2 className="text-sm font-medium">Hotspot map</h2>
+              <h2 className="text-sm font-medium">{t("admin.hotspotMap")}</h2>
               <p className="text-xs text-muted-foreground">
-                Geo-located open and recent reports.
+                {t("admin.hotspotSub")}
               </p>
             </div>
             <ClientOnly
               fallback={
                 <div className="grid h-[400px] place-items-center text-sm text-muted-foreground">
-                  Loading map…
+                  {t("admin.loadingMap")}
                 </div>
               }
+
             >
               <YangonMap markers={markers} height="400px" />
             </ClientOnly>
