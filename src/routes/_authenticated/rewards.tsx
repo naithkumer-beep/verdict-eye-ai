@@ -207,7 +207,10 @@ function RewardsPage() {
         )}
       </div>
 
+      <ExchangeSection total={total} />
+
       <Card className="p-4">
+
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
           <div className="space-y-1.5">
             <Label htmlFor="rw-from" className="text-xs">From</Label>
