@@ -277,5 +277,31 @@ export function localNum(input: string | number): string {
   return i18n.language === "my" ? toMyanmarDigits(input) : String(input);
 }
 
+
+// Translate an English relative time string ("about 2 hours ago", "5 minutes ago")
+// into Myanmar with Burmese digits when active.
+export function localRelative(en: string): string {
+  if (i18n.language !== "my") return en;
+  let s = en;
+  const map: Array<[RegExp, string]> = [
+    [/\babout\b/gi, "ခန့်"],
+    [/\bless than a minute ago\b/gi, "မိနစ်အနည်းငယ်က"],
+    [/\b1 minute ago\b/gi, "၁ မိနစ်က"],
+    [/\b(\d+) minutes? ago\b/gi, "$1 မိနစ်က"],
+    [/\b1 hour ago\b/gi, "၁ နာရီက"],
+    [/\b(\d+) hours? ago\b/gi, "$1 နာရီက"],
+    [/\b1 day ago\b/gi, "၁ ရက်က"],
+    [/\b(\d+) days? ago\b/gi, "$1 ရက်က"],
+    [/\b1 month ago\b/gi, "၁ လက"],
+    [/\b(\d+) months? ago\b/gi, "$1 လက"],
+    [/\b1 year ago\b/gi, "၁ နှစ်က"],
+    [/\b(\d+) years? ago\b/gi, "$1 နှစ်က"],
+    [/\bin (\d+) (minute|hour|day|month|year)s?\b/gi, "$1 $2 အတွင်း"],
+  ];
+  for (const [re, rep] of map) s = s.replace(re, rep);
+  return toMyanmarDigits(s);
+}
+
 export default i18n;
+
 
