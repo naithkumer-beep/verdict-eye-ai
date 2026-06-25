@@ -131,7 +131,7 @@ function ReportDetail() {
                 variant="outline"
                 className={`font-mono text-[10px] uppercase ${STATUS_COLOR[report.status] ?? ""}`}
               >
-                {report.status}
+                {t(`reports.status${report.status.charAt(0).toUpperCase()}${report.status.slice(1)}`, { defaultValue: report.status })}
               </Badge>
               <Badge variant="outline" className="font-mono text-[10px] uppercase">
                 {localCategory(report.category)}
