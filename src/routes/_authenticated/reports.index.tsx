@@ -16,8 +16,10 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
-import { REPORT_CATEGORIES, getCategoryLabel } from "@/lib/categories";
+import { REPORT_CATEGORIES } from "@/lib/categories";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { localNum, localRelative } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/reports/")({
   head: () => ({ meta: [{ title: "Reports — CIAP" }] }),
