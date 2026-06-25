@@ -48,6 +48,8 @@ import { formatDistanceToNow, isPast } from "date-fns";
 import { toast } from "sonner";
 import { sendTransactionalEmail } from "@/lib/email/send";
 import { YangonMap } from "@/components/yangon-map";
+import { useTranslation } from "react-i18next";
+import { localNum, localRelative, localCategory } from "@/lib/i18n";
 
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -73,6 +75,7 @@ const PRIORITY_COLOR: Record<string, string> = {
 };
 
 function AdminPage() {
+  const { t } = useTranslation();
   const isModerator = useIsModerator();
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
@@ -82,6 +85,7 @@ function AdminPage() {
   const escalateFn = useServerFn(runEscalation);
   const refreshFn = useServerFn(refreshAdminPredictions);
   const [inspectId, setInspectId] = useState<string | null>(null);
+
 
 
   useEffect(() => {
@@ -188,7 +192,7 @@ function AdminPage() {
       .eq("id", id);
     if (error) return toast.error(error.message);
     await audit("report.status_change", id, { title: prev?.title, from: prev?.status, to: status });
-    toast.success(`Status → ${status}`);
+    toast.success(t("admin.statusUpdated", { status }));
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
 
     // Email the reporter when their report is resolved — idempotent via report_resolved_emails
@@ -227,11 +231,11 @@ function AdminPage() {
               totalPoints: (profile?.points as number | undefined) ?? undefined,
             },
           });
-          toast.success("Resolution email sent");
+          toast.success(t("admin.resolutionEmailSent"));
         }
       } catch (e) {
         console.error("Failed to send resolution email", e);
-        toast.error("Could not send resolution email");
+        toast.error(t("admin.resolutionEmailFailed"));
       }
     }
   };
@@ -243,7 +247,7 @@ function AdminPage() {
       .eq("id", id);
     if (error) return toast.error(error.message);
     await audit("report.priority_change", id, { to: priority });
-    toast.success(`Priority → ${priority}`);
+    toast.success(t("admin.priorityUpdated", { priority }));
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
@@ -255,16 +259,16 @@ function AdminPage() {
       .eq("id", id);
     if (error) return toast.error(error.message);
     await audit("report.department_assign", id, { to: dept?.name_en });
-    toast.success(`Assigned to ${dept?.name_en}`);
+    toast.success(t("admin.assignedTo", { name: dept?.name_en ?? "" }));
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
   const delReport = async (id: string, title: string) => {
-    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    if (!confirm(t("admin.confirmDelete", { title }))) return;
     const { error } = await supabase.from("reports").delete().eq("id", id);
     if (error) return toast.error(error.message);
     await audit("report.delete", id, { title });
-    toast.success("Report deleted");
+    toast.success(t("admin.reportDeleted"));
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
@@ -275,9 +279,9 @@ function AdminPage() {
         return r;
       }),
       {
-        loading: "Running escalation…",
-        success: (r: any) => `Escalated ${r?.escalated ?? 0} report(s)`,
-        error: "Escalation failed",
+        loading: t("admin.escalating"),
+        success: (r: any) => t("admin.escalated", { n: localNum(r?.escalated ?? 0) }),
+        error: t("admin.escalateFailed"),
       },
     );
   };
@@ -288,9 +292,9 @@ function AdminPage() {
         qc.invalidateQueries({ queryKey: ["admin-prediction"] }),
       ),
       {
-        loading: "Refreshing AI insights…",
-        success: "Insights updated",
-        error: "Failed to refresh",
+        loading: t("admin.refreshingAi"),
+        success: t("admin.insightsUpdated"),
+        error: t("admin.refreshFailed"),
       },
     );
   };
@@ -337,53 +341,55 @@ function AdminPage() {
           <ShieldCheck className="h-5 w-5 text-accent" />
           <div>
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-              Admin Panel
+              {t("admin.eyebrow")}
               {isAdmin && (
                 <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                  <Radio className="mr-1 h-3 w-3 animate-pulse text-success" /> Live
+                  <Radio className="mr-1 h-3 w-3 animate-pulse text-success" /> {t("admin.live")}
                 </Badge>
               )}
             </div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Operations, KPIs &amp; AI insights
+              {t("admin.heading")}
             </h1>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Manage reports and review executive metrics in one place.
+              {t("admin.sub")}
             </p>
           </div>
         </div>
         {isAdmin && (
           <div className="flex flex-wrap gap-2">
             <Button size="sm" onClick={refreshInsights}>
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Refresh AI
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> {t("admin.refreshAi")}
             </Button>
             <Button variant="outline" size="sm" onClick={escalate}>
-              <Zap className="mr-1.5 h-3.5 w-3.5" /> Run escalation
+              <Zap className="mr-1.5 h-3.5 w-3.5" /> {t("admin.runEscalation")}
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link to="/admin/users">
-                <Users className="mr-1.5 h-3.5 w-3.5" /> Users
+                <Users className="mr-1.5 h-3.5 w-3.5" /> {t("admin.usersBtn")}
               </Link>
             </Button>
           </div>
         )}
       </div>
 
+
       {isAdmin && (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Kpi icon={Activity} label="Open issues" value={openReports.length} tone="info" />
-            <Kpi icon={AlertTriangle} label="Critical" value={criticalCount} tone="destructive" />
-            <Kpi icon={Clock} label="Overdue" value={overdueCount} tone="warning" />
-            <Kpi icon={DollarSign} label="Est. cost (MMK)" value={totalCost.toLocaleString()} tone="success" />
+            <Kpi icon={Activity} label={t("admin.openIssues")} value={localNum(openReports.length)} tone="info" />
+            <Kpi icon={AlertTriangle} label={t("admin.critical")} value={localNum(criticalCount)} tone="destructive" />
+            <Kpi icon={Clock} label={t("admin.overdue")} value={localNum(overdueCount)} tone="warning" />
+            <Kpi icon={DollarSign} label={t("admin.estCost")} value={localNum(totalCost.toLocaleString())} tone="success" />
           </div>
+
 
           <div className="grid gap-5 lg:grid-cols-2">
             <Card className="p-5">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-medium">Department performance</h2>
+                <h2 className="text-sm font-medium">{t("admin.deptPerf")}</h2>
                 <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                  {deptStats.length}
+                  {localNum(deptStats.length)}
                 </Badge>
               </div>
               <div className="space-y-2.5">
@@ -392,7 +398,7 @@ function AdminPage() {
                     <div className="flex items-center justify-between text-xs">
                       <span className="truncate">{d.name}</span>
                       <span className="tabular-nums text-muted-foreground">
-                        {d.resolved}/{d.total} · {d.pct}%
+                        {localNum(d.resolved)}/{localNum(d.total)} · {localNum(d.pct)}%
                       </span>
                     </div>
                     <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
@@ -404,20 +410,22 @@ function AdminPage() {
                   </div>
                 ))}
                 {deptStats.length === 0 && (
-                  <div className="text-sm text-muted-foreground">No department data yet.</div>
+                  <div className="text-sm text-muted-foreground">{t("admin.noDeptData")}</div>
                 )}
               </div>
+
             </Card>
 
             <Card className="p-5">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-accent" />
-                <h2 className="text-sm font-medium">AI predictions</h2>
+                <h2 className="text-sm font-medium">{t("admin.aiPredictions")}</h2>
               </div>
               {insights.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No insights yet. Click <strong>Refresh AI</strong> to generate.
+                  {t("admin.noInsights")} <strong>{t("admin.refreshAiInline")}</strong> {t("admin.toGenerate")}
                 </p>
+
               ) : (
                 <ul className="space-y-3">
                   {insights.map((ins, i) => (
@@ -433,17 +441,18 @@ function AdminPage() {
 
           <Card className="overflow-hidden p-0">
             <div className="border-b border-border p-4">
-              <h2 className="text-sm font-medium">Hotspot map</h2>
+              <h2 className="text-sm font-medium">{t("admin.hotspotMap")}</h2>
               <p className="text-xs text-muted-foreground">
-                Geo-located open and recent reports.
+                {t("admin.hotspotSub")}
               </p>
             </div>
             <ClientOnly
               fallback={
                 <div className="grid h-[400px] place-items-center text-sm text-muted-foreground">
-                  Loading map…
+                  {t("admin.loadingMap")}
                 </div>
               }
+
             >
               <YangonMap markers={markers} height="400px" />
             </ClientOnly>
@@ -483,7 +492,7 @@ function AdminPage() {
                           variant="outline"
                           className="gap-1 border-destructive/30 bg-destructive/15 font-mono text-[10px] uppercase text-destructive"
                         >
-                          <AlertCircle className="h-3 w-3" /> Overdue
+                          <AlertCircle className="h-3 w-3" /> {t("admin.overdueBadge")}
                         </Badge>
                       )}
                     </div>
@@ -491,8 +500,8 @@ function AdminPage() {
                       {r.description}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                      <span>{getCategoryLabel(r.category)}</span>
-                      <span>· {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}</span>
+                      <span>{localCategory(r.category)}</span>
+                      <span>· {localRelative(formatDistanceToNow(new Date(r.created_at), { addSuffix: true }))}</span>
                       {r.department && (
                         <span className="flex items-center gap-1 text-accent">
                           <Building2 className="h-3 w-3" /> {r.department}
@@ -502,18 +511,19 @@ function AdminPage() {
                         <span
                           className={`flex items-center gap-1 ${overdue ? "text-destructive" : ""}`}
                         >
-                          <Clock className="h-3 w-3" /> Due{" "}
-                          {formatDistanceToNow(new Date(r.deadline_at), { addSuffix: true })}
+                          <Clock className="h-3 w-3" /> {t("admin.due")}{" "}
+                          {localRelative(formatDistanceToNow(new Date(r.deadline_at), { addSuffix: true }))}
                         </span>
                       )}
                       <span className="flex items-center gap-1 text-success">
                         <DollarSign className="h-3 w-3" />
-                        Est. repair{" "}
+                        {t("admin.estRepair")}{" "}
                         <span className="font-mono tabular-nums">
-                          {(costByCat[r.category] ?? 0).toLocaleString()} MMK
+                          {localNum((costByCat[r.category] ?? 0).toLocaleString())} MMK
                         </span>
                       </span>
                     </div>
+
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <Button
@@ -546,8 +556,9 @@ function AdminPage() {
                   {/* Status */}
                   <div>
                     <div className="mb-1 font-mono text-[10px] uppercase text-muted-foreground">
-                      Status
+                      {t("admin.status")}
                     </div>
+
                     {isAdmin ? (
                       <Select value={r.status} onValueChange={(v) => changeStatus(r.id, v)}>
                         <SelectTrigger className="h-8 text-xs">
@@ -574,7 +585,7 @@ function AdminPage() {
                   {/* Priority */}
                   <div>
                     <div className="mb-1 flex items-center gap-1 font-mono text-[10px] uppercase text-muted-foreground">
-                      <Flag className="h-3 w-3" /> Priority
+                      <Flag className="h-3 w-3" /> {t("admin.priority")}
                     </div>
                     {isAdmin ? (
                       <Select
@@ -582,8 +593,9 @@ function AdminPage() {
                         onValueChange={(v) => changePriority(r.id, v as PriorityValue)}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Set priority" />
+                          <SelectValue placeholder={t("admin.setPriority")} />
                         </SelectTrigger>
+
                         <SelectContent>
                           {PRIORITIES.map((p) => (
                             <SelectItem key={p.value} value={p.value} className="text-xs">
@@ -607,7 +619,7 @@ function AdminPage() {
                   {/* Department */}
                   <div>
                     <div className="mb-1 flex items-center gap-1 font-mono text-[10px] uppercase text-muted-foreground">
-                      <Building2 className="h-3 w-3" /> Department
+                      <Building2 className="h-3 w-3" /> {t("admin.department")}
                     </div>
                     {isAdmin ? (
                       <Select
@@ -615,8 +627,9 @@ function AdminPage() {
                         onValueChange={(v) => changeDepartment(r.id, v)}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Assign department" />
+                          <SelectValue placeholder={t("admin.assignDept")} />
                         </SelectTrigger>
+
                         <SelectContent>
                           {departments.map((d) => (
                             <SelectItem key={d.id} value={d.id} className="text-xs">
@@ -637,8 +650,9 @@ function AdminPage() {
           })}
           {reports.length === 0 && (
             <div className="p-10 text-center text-sm text-muted-foreground">
-              No reports in the queue.
+              {t("admin.noReports")}
             </div>
+
           )}
         </div>
       </Card>
@@ -649,6 +663,7 @@ function AdminPage() {
 }
 
 function PredictionInspector({ reportId, onClose }: { reportId: string | null; onClose: () => void }) {
+  const { t } = useTranslation();
   const { data: report } = useQuery({
     queryKey: ["admin-report-detail", reportId],
     queryFn: async () => {
@@ -667,37 +682,37 @@ function PredictionInspector({ reportId, onClose }: { reportId: string | null; o
     <Dialog open={!!reportId} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-2xl flex-col gap-0 overflow-hidden p-0">
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4 pr-12">
-          <DialogTitle className="truncate">{r.title ?? "Report"}</DialogTitle>
-          <DialogDescription>AI prediction inputs, confidence scores, and generated payload.</DialogDescription>
+          <DialogTitle className="truncate">{r.title ?? t("admin.inspector.title")}</DialogTitle>
+          <DialogDescription>{t("admin.inspector.sub")}</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <ScoreBox label="Confidence" value={r.confidence_score ?? 0} />
-            <ScoreBox label="Relevance" value={r.relevance_score ?? 0} />
-            <ScoreBox label="Quality" value={r.quality_score ?? 0} />
-            <ScoreBox label="Impact" value={r.impact_score ?? 0} />
+            <ScoreBox label={t("admin.inspector.confidence")} value={r.confidence_score ?? 0} />
+            <ScoreBox label={t("admin.inspector.relevance")} value={r.relevance_score ?? 0} />
+            <ScoreBox label={t("admin.inspector.quality")} value={r.quality_score ?? 0} />
+            <ScoreBox label={t("admin.inspector.impact")} value={r.impact_score ?? 0} />
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <Field label="Category" value={r.category} />
-            <Field label="Status" value={r.status} />
-            <Field label="Priority" value={r.priority ?? "—"} />
-            <Field label="Severity" value={r.severity ?? "—"} />
-            <Field label="Affected population" value={(r.affected_population ?? 0).toLocaleString()} />
-            <Field label="Risk level" value={r.risk_level ?? "—"} />
+            <Field label={t("admin.inspector.category")} value={localCategory(r.category ?? "")} />
+            <Field label={t("admin.inspector.status")} value={r.status} />
+            <Field label={t("admin.inspector.priority")} value={r.priority ?? "—"} />
+            <Field label={t("admin.inspector.severity")} value={r.severity ?? "—"} />
+            <Field label={t("admin.inspector.affectedPop")} value={localNum((r.affected_population ?? 0).toLocaleString())} />
+            <Field label={t("admin.inspector.riskLevel")} value={r.risk_level ?? "—"} />
           </div>
 
           {r.ai_summary && (
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">AI summary</div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{t("admin.inspector.aiSummary")}</div>
               <p className="mt-1 text-sm">{r.ai_summary}</p>
             </div>
           )}
 
           {actions.length > 0 && (
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Recommended actions</div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{t("admin.inspector.recommended")}</div>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
                 {actions.map((a, i) => <li key={i}>{a}</li>)}
               </ul>
@@ -705,14 +720,15 @@ function PredictionInspector({ reportId, onClose }: { reportId: string | null; o
           )}
 
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Raw AI payload</div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{t("admin.inspector.rawPayload")}</div>
             <pre className="mt-1 max-h-64 overflow-auto rounded-md border border-border bg-secondary/40 p-3 text-[11px] leading-relaxed">
-{JSON.stringify(r.ai_analysis ?? { note: "No AI analysis stored" }, null, 2)}
+{JSON.stringify(r.ai_analysis ?? { note: t("admin.inspector.noAi") }, null, 2)}
             </pre>
           </div>
         </div>
       </DialogContent>
     </Dialog>
+
 
   );
 }
