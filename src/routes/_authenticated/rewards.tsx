@@ -2,7 +2,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Trophy, Sparkles, CheckCircle2, ArrowUpRight, Download, X } from "lucide-react";
+import { Trophy, Sparkles, CheckCircle2, ArrowUpRight, Download, X, Smartphone, ShoppingBag, Bus, Coffee, Gift } from "lucide-react";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
