@@ -47,7 +47,27 @@ function ReportsList() {
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
-      return data ?? [];
+      const rows = data ?? [];
+      const ids = rows.map((r) => r.id);
+      if (!ids.length) return rows.map((r) => ({ ...r, thumbUrl: null as string | null }));
+      const { data: imgs } = await supabase
+        .from("report_images")
+        .select("report_id,storage_path")
+        .in("report_id", ids);
+      const firstByReport = new Map<string, string>();
+      for (const img of imgs ?? []) {
+        if (!firstByReport.has(img.report_id)) firstByReport.set(img.report_id, img.storage_path);
+      }
+      const signed = await Promise.all(
+        Array.from(firstByReport.entries()).map(async ([rid, path]) => {
+          const { data: s } = await supabase.storage
+            .from("report-images")
+            .createSignedUrl(path, 60 * 60);
+          return [rid, s?.signedUrl ?? null] as const;
+        }),
+      );
+      const urlByReport = new Map(signed);
+      return rows.map((r) => ({ ...r, thumbUrl: urlByReport.get(r.id) ?? null }));
     },
     enabled: !!user,
   });
