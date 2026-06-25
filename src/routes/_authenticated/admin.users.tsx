@@ -101,6 +101,9 @@ function AdminUsersPage() {
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const suggestFn = useServerFn(suggestUserRole);
   const listUsersFn = useServerFn(listAdminUsers);
+  const banFn = useServerFn(setUserBanned);
+  const [banTarget, setBanTarget] = useState<UserRow | null>(null);
+  const [banPending, setBanPending] = useState(false);
 
   useEffect(() => {
     if (initialized && role !== null && !isAdmin) navigate({ to: "/dashboard", replace: true });
