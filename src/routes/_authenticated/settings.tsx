@@ -60,7 +60,7 @@ function SettingsPage() {
       });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Profile saved");
+    else toast.success(t("settings.profileSaved"));
   };
 
   const onPickAvatar = async (file: File | null) => {
