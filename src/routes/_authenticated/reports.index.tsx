@@ -40,6 +40,7 @@ function ReportsList() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [category, setCategory] = useState<string>("all");
+  const [scope, setScope] = useState<string>("all");
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["reports-list", user?.id],
@@ -83,6 +84,7 @@ function ReportsList() {
   });
 
   const filtered = reports.filter((r) => {
+    if (scope === "mine" && r.user_id !== user?.id) return false;
     if (status !== "all" && r.status !== status) return false;
     if (category !== "all" && r.category !== category) return false;
     if (q && !r.title.toLowerCase().includes(q.toLowerCase())) return false;
@@ -118,6 +120,15 @@ function ReportsList() {
               className="h-8 pl-8 text-sm"
             />
           </div>
+          <Select value={scope} onValueChange={setScope}>
+            <SelectTrigger className="h-8 w-[130px] text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("reports.scopeAll", { defaultValue: "All reports" })}</SelectItem>
+              <SelectItem value="mine">{t("reports.scopeMine", { defaultValue: "My reports" })}</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className="h-8 w-[140px] text-sm">
               <SelectValue />
