@@ -492,7 +492,7 @@ function AdminPage() {
                           variant="outline"
                           className="gap-1 border-destructive/30 bg-destructive/15 font-mono text-[10px] uppercase text-destructive"
                         >
-                          <AlertCircle className="h-3 w-3" /> Overdue
+                          <AlertCircle className="h-3 w-3" /> {t("admin.overdueBadge")}
                         </Badge>
                       )}
                     </div>
@@ -500,8 +500,8 @@ function AdminPage() {
                       {r.description}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                      <span>{getCategoryLabel(r.category)}</span>
-                      <span>· {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}</span>
+                      <span>{localCategory(r.category)}</span>
+                      <span>· {localRelative(formatDistanceToNow(new Date(r.created_at), { addSuffix: true }))}</span>
                       {r.department && (
                         <span className="flex items-center gap-1 text-accent">
                           <Building2 className="h-3 w-3" /> {r.department}
@@ -511,18 +511,19 @@ function AdminPage() {
                         <span
                           className={`flex items-center gap-1 ${overdue ? "text-destructive" : ""}`}
                         >
-                          <Clock className="h-3 w-3" /> Due{" "}
-                          {formatDistanceToNow(new Date(r.deadline_at), { addSuffix: true })}
+                          <Clock className="h-3 w-3" /> {t("admin.due")}{" "}
+                          {localRelative(formatDistanceToNow(new Date(r.deadline_at), { addSuffix: true }))}
                         </span>
                       )}
                       <span className="flex items-center gap-1 text-success">
                         <DollarSign className="h-3 w-3" />
-                        Est. repair{" "}
+                        {t("admin.estRepair")}{" "}
                         <span className="font-mono tabular-nums">
-                          {(costByCat[r.category] ?? 0).toLocaleString()} MMK
+                          {localNum((costByCat[r.category] ?? 0).toLocaleString())} MMK
                         </span>
                       </span>
                     </div>
+
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <Button
@@ -555,8 +556,9 @@ function AdminPage() {
                   {/* Status */}
                   <div>
                     <div className="mb-1 font-mono text-[10px] uppercase text-muted-foreground">
-                      Status
+                      {t("admin.status")}
                     </div>
+
                     {isAdmin ? (
                       <Select value={r.status} onValueChange={(v) => changeStatus(r.id, v)}>
                         <SelectTrigger className="h-8 text-xs">
@@ -583,7 +585,7 @@ function AdminPage() {
                   {/* Priority */}
                   <div>
                     <div className="mb-1 flex items-center gap-1 font-mono text-[10px] uppercase text-muted-foreground">
-                      <Flag className="h-3 w-3" /> Priority
+                      <Flag className="h-3 w-3" /> {t("admin.priority")}
                     </div>
                     {isAdmin ? (
                       <Select
@@ -591,8 +593,9 @@ function AdminPage() {
                         onValueChange={(v) => changePriority(r.id, v as PriorityValue)}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Set priority" />
+                          <SelectValue placeholder={t("admin.setPriority")} />
                         </SelectTrigger>
+
                         <SelectContent>
                           {PRIORITIES.map((p) => (
                             <SelectItem key={p.value} value={p.value} className="text-xs">
@@ -616,7 +619,7 @@ function AdminPage() {
                   {/* Department */}
                   <div>
                     <div className="mb-1 flex items-center gap-1 font-mono text-[10px] uppercase text-muted-foreground">
-                      <Building2 className="h-3 w-3" /> Department
+                      <Building2 className="h-3 w-3" /> {t("admin.department")}
                     </div>
                     {isAdmin ? (
                       <Select
@@ -624,8 +627,9 @@ function AdminPage() {
                         onValueChange={(v) => changeDepartment(r.id, v)}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Assign department" />
+                          <SelectValue placeholder={t("admin.assignDept")} />
                         </SelectTrigger>
+
                         <SelectContent>
                           {departments.map((d) => (
                             <SelectItem key={d.id} value={d.id} className="text-xs">
@@ -646,8 +650,9 @@ function AdminPage() {
           })}
           {reports.length === 0 && (
             <div className="p-10 text-center text-sm text-muted-foreground">
-              No reports in the queue.
+              {t("admin.noReports")}
             </div>
+
           )}
         </div>
       </Card>
