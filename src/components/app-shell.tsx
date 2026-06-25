@@ -183,7 +183,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="truncate text-xs font-medium">{displayName}</div>
             <div className="flex items-center gap-1">
               <Badge variant="outline" className="h-4 px-1 font-mono text-[9px] uppercase">
-                {role ?? "user"}
+                {t(`roles.${role ?? "user"}`)}
               </Badge>
             </div>
           </div>
