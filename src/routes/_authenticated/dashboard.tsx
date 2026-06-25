@@ -245,23 +245,23 @@ function DashboardPage() {
 
         <Card className="p-5">
           <div className="mb-4">
-            <div className="text-sm font-medium">AI analysis stats</div>
-            <div className="text-xs text-muted-foreground">Aggregate confidence</div>
+            <div className="text-sm font-medium">{t("dashboard.aiStats")}</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.aggregateConfidence")}</div>
           </div>
           <div className="space-y-4">
-            <Metric label="Avg confidence" value={`${avgConfidence}%`} icon={Activity} />
+            <Metric label={t("dashboard.avgConfidence")} value={`${localNum(avgConfidence)}%`} icon={Activity} />
             <Metric
-              label="Acceptance rate"
+              label={t("dashboard.acceptanceRate")}
               value={
                 stats.total
-                  ? `${Math.round(((stats.total - stats.rejected) / stats.total) * 100)}%`
+                  ? `${localNum(Math.round(((stats.total - stats.rejected) / stats.total) * 100))}%`
                   : "—"
               }
               icon={CheckCircle2}
             />
             <Metric
-              label="Critical reports"
-              value={reports?.filter((r) => r.severity === "critical").length ?? 0}
+              label={t("dashboard.criticalReports")}
+              value={localNum(reports?.filter((r) => r.severity === "critical").length ?? 0)}
               icon={AlertTriangle}
             />
           </div>
@@ -271,8 +271,8 @@ function DashboardPage() {
       <div className="grid gap-3 lg:grid-cols-3">
         <Card className="p-5 lg:col-span-2">
           <div className="mb-4">
-            <div className="text-sm font-medium">By category</div>
-            <div className="text-xs text-muted-foreground">Volume per report type</div>
+            <div className="text-sm font-medium">{t("dashboard.byCategory")}</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.volumePerType")}</div>
           </div>
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -295,7 +295,7 @@ function DashboardPage() {
         </Card>
 
         <Card className="p-5">
-          <div className="mb-4 text-sm font-medium">Recent activity</div>
+          <div className="mb-4 text-sm font-medium">{t("dashboard.recent")}</div>
           <div className="space-y-3">
             {(reports ?? []).slice(0, 6).map((r) => (
               <Link
@@ -308,14 +308,14 @@ function DashboardPage() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{r.title}</div>
                   <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                    {localRelative(formatDistanceToNow(new Date(r.created_at), { addSuffix: true }))}
                   </div>
                 </div>
               </Link>
             ))}
             {!reports?.length && (
               <div className="rounded-md border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-                No reports yet.
+                {t("dashboard.noReports")}
               </div>
             )}
           </div>
