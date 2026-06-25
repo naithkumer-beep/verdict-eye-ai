@@ -463,6 +463,51 @@ function AdminUsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!banTarget} onOpenChange={(o) => !o && !banPending && setBanTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {banTarget?.banned ? (
+                <><CheckCircle2 className="h-4 w-4 text-success" /> Unban user</>
+              ) : (
+                <><Ban className="h-4 w-4 text-destructive" /> Ban user</>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {banTarget?.banned
+                ? `Restore access for ${banTarget?.display_name ?? banTarget?.email}? They will be able to sign in and submit reports again.`
+                : `Block ${banTarget?.display_name ?? banTarget?.email} from signing in or using the platform. Their existing reports stay visible.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" disabled={banPending} onClick={() => setBanTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant={banTarget?.banned ? "default" : "destructive"}
+              disabled={banPending}
+              onClick={async () => {
+                if (!banTarget) return;
+                setBanPending(true);
+                try {
+                  await banFn({ data: { userId: banTarget.id, banned: !banTarget.banned } });
+                  toast.success(banTarget.banned ? "User unbanned" : "User banned");
+                  setBanTarget(null);
+                  void qc.invalidateQueries({ queryKey: ["admin-users"] });
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setBanPending(false);
+                }
+              }}
+            >
+              {banPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+              {banTarget?.banned ? "Unban" : "Ban"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
