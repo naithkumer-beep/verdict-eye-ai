@@ -113,7 +113,7 @@ function SettingsPage() {
       await supabase.from("profiles").update({ avatar_url: null }).eq("id", user.id);
       setAvatarUrl(null);
       setAvatarKey((k) => k + 1);
-      toast.success("Photo removed");
+      toast.success(t("settings.photoRemoved"));
     } finally {
       setUploadingAvatar(false);
     }
