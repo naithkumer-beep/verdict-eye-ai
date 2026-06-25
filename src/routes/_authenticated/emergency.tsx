@@ -52,7 +52,7 @@ function EmergencyPage() {
                   <div className="text-sm font-semibold">{t(`emergency.${h.key}`)}</div>
                   <div className="mt-0.5 text-xs text-muted-foreground">{t(`emergency.descriptions.${h.key}`)}</div>
                   <div className="mt-2 flex items-center justify-between gap-3">
-                    <div className="font-mono text-2xl font-semibold tabular-nums">{h.number}</div>
+                    <div className="font-mono text-2xl font-semibold tabular-nums">{localNum(h.number)}</div>
                     <Button asChild size="sm" variant="destructive">
                       <a href={`tel:${h.number.replace(/[^+0-9]/g, "")}`}>
                         <Phone className="mr-1.5 h-3.5 w-3.5" />
