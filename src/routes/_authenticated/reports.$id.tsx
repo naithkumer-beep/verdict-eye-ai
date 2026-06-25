@@ -92,13 +92,13 @@ function ReportDetail() {
 
   const onDelete = async () => {
     if (!canDelete) return;
-    if (!confirm("Delete this report? This cannot be undone.")) return;
+    if (!confirm(t("reports.confirmDelete"))) return;
     const { error } = await supabase.from("reports").delete().eq("id", report.id);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Report deleted");
+    toast.success(t("reports.deleted"));
     navigate({ to: "/reports" });
   };
 
