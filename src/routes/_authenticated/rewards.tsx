@@ -221,15 +221,12 @@ function RewardsPage() {
 
       <Card className="p-4">
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
           <div className="space-y-1.5">
-            <Label htmlFor="rw-from" className="text-xs">From</Label>
-            <Input id="rw-from" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+            <Label htmlFor="rw-date" className="text-xs">Report submitted on</Label>
+            <Input id="rw-date" type="date" value={submittedDate} onChange={(e) => setSubmittedDate(e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="rw-to" className="text-xs">To</Label>
-            <Input id="rw-to" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-          </div>
+
           <div className="space-y-1.5">
             <Label className="text-xs">Kind</Label>
             <Select value={kind} onValueChange={setKind}>
