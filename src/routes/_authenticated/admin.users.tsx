@@ -139,8 +139,9 @@ function AdminUsersPage() {
 
   const setRole = async (user: UserRow, newRole: Role) => {
     if (user.id === me?.id && newRole !== "admin") {
-      toast.error("You cannot remove your own admin role.");
+      toast.error(t("admin.users.cantRemoveSelf"));
       return;
+
     }
     const { error: delErr } = await supabase.from("user_roles").delete().eq("user_id", user.id);
     if (delErr) {
@@ -163,7 +164,7 @@ function AdminUsersPage() {
         details: { to: newRole },
       });
     }
-    toast.success(`Role updated to ${newRole}`);
+    toast.success(t("admin.users.roleUpdated", { role: t(`roles.${newRole}`) }));
     void qc.invalidateQueries({ queryKey: ["admin-users"] });
 
     // Fire-and-forget email notification
@@ -174,12 +175,13 @@ function AdminUsersPage() {
         newRole,
         grantedBy: me?.email ?? null,
       }).then(() => {
-        toast.message("Notification email queued", {
-          description: `${user.email} will receive a role update email.`,
+        toast.message(t("admin.users.emailQueued"), {
+          description: t("admin.users.emailWill", { email: user.email }),
         });
       });
     }
   };
+
 
   const filtered = users.filter((u) => {
     if (!q) return true;
@@ -194,21 +196,22 @@ function AdminUsersPage() {
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-6 lg:px-8 lg:py-8">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-muted-foreground" onClick={() => navigate({ to: "/admin" })}>
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> {t("common.back") !== "common.back" ? t("common.back") : "Back"}
         </Button>
         <Users className="h-5 w-5 text-accent" />
         <div>
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            Admin
+            {t("admin.users.eyebrow")}
           </div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            User management
+            {t("admin.users.heading")}
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
-            Grant roles, run AI role suggestions, and send automatic email notifications.
+            {t("admin.users.sub")}
           </p>
         </div>
       </div>
+
 
       <Card className="p-3">
         <div className="relative">
@@ -216,7 +219,7 @@ function AdminUsersPage() {
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search users by email or name"
+            placeholder={t("admin.users.search")}
             className="h-8 pl-8 text-sm"
           />
         </div>
@@ -224,19 +227,20 @@ function AdminUsersPage() {
 
       <Card className="overflow-hidden p-0">
         <div className="hidden grid-cols-12 gap-3 border-b border-border bg-secondary/40 px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:grid">
-          <div className="col-span-3">User</div>
-          <div className="col-span-2">Joined</div>
-          <div className="col-span-2">Activity</div>
-          <div className="col-span-1">Role</div>
-          <div className="col-span-4 text-right">Actions</div>
+          <div className="col-span-3">{t("admin.users.colUser")}</div>
+          <div className="col-span-2">{t("admin.users.colJoined")}</div>
+          <div className="col-span-2">{t("admin.users.colActivity")}</div>
+          <div className="col-span-1">{t("admin.users.colRole")}</div>
+          <div className="col-span-4 text-right">{t("admin.users.colActions")}</div>
         </div>
         <div className="divide-y divide-border">
           {isLoading && (
-            <div className="p-10 text-center text-sm text-muted-foreground">Loading users…</div>
+            <div className="p-10 text-center text-sm text-muted-foreground">{t("admin.users.loading")}</div>
           )}
           {!isLoading && filtered.length === 0 && (
-            <div className="p-10 text-center text-sm text-muted-foreground">No users found.</div>
+            <div className="p-10 text-center text-sm text-muted-foreground">{t("admin.users.none")}</div>
           )}
+
           {filtered.map((u) => (
             <div
               key={u.id}
@@ -256,25 +260,27 @@ function AdminUsersPage() {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground sm:col-span-2">
-                {formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}
+                {localRelative(formatDistanceToNow(new Date(u.created_at), { addSuffix: true }))}
               </div>
+
               <div className="flex flex-wrap items-center gap-1.5 sm:col-span-2">
                 <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                  {u.reports_total} rpt
+                  {localNum(u.reports_total)} {t("admin.users.rpt")}
                 </Badge>
                 <Badge
                   variant="outline"
                   className="border-success/30 bg-success/10 font-mono text-[10px] uppercase text-success"
                 >
-                  {u.reports_resolved} ✓
+                  {localNum(u.reports_resolved)} ✓
                 </Badge>
                 <Badge
                   variant="outline"
                   className="border-accent/30 bg-accent/10 font-mono text-[10px] uppercase text-accent"
                 >
-                  {u.points} pts
+                  {localNum(u.points)} {t("admin.users.pts")}
                 </Badge>
               </div>
+
               <div className="sm:col-span-1">
                 <Badge
                   variant="outline"
@@ -286,17 +292,18 @@ function AdminUsersPage() {
                         : ""
                   }`}
                 >
-                  {u.role}
+                  {t(`roles.${u.role}`)}
                 </Badge>
                 {u.banned && (
                   <Badge variant="outline" className="ml-1 border-destructive/40 bg-destructive/10 font-mono text-[10px] uppercase text-destructive">
-                    banned
+                    {t("admin.users.banned")}
                   </Badge>
                 )}
                 {u.id === me?.id && (
-                  <div className="mt-0.5 font-mono text-[10px] uppercase text-muted-foreground">(you)</div>
+                  <div className="mt-0.5 font-mono text-[10px] uppercase text-muted-foreground">{t("admin.users.you")}</div>
                 )}
               </div>
+
               <div className="flex flex-wrap justify-end gap-1 sm:col-span-4">
                 <Button
                   size="sm"
@@ -304,7 +311,7 @@ function AdminUsersPage() {
                   className="h-7 gap-1 text-xs"
                   onClick={() => openSuggest(u)}
                 >
-                  <Sparkles className="h-3 w-3" /> AI suggest
+                  <Sparkles className="h-3 w-3" /> {t("admin.users.aiSuggest")}
                 </Button>
                 <Button
                   size="sm"
@@ -313,7 +320,7 @@ function AdminUsersPage() {
                   disabled={u.role === "user" || u.id === me?.id}
                   onClick={() => setRole(u, "user")}
                 >
-                  <UserIcon className="h-3 w-3" /> User
+                  <UserIcon className="h-3 w-3" /> {t("admin.users.user")}
                 </Button>
                 <Button
                   size="sm"
@@ -322,7 +329,7 @@ function AdminUsersPage() {
                   disabled={u.role === "moderator" || u.id === me?.id}
                   onClick={() => setRole(u, "moderator")}
                 >
-                  <Shield className="h-3 w-3" /> Mod
+                  <Shield className="h-3 w-3" /> {t("admin.users.mod")}
                 </Button>
                 <Button
                   size="sm"
@@ -331,8 +338,9 @@ function AdminUsersPage() {
                   disabled={u.role === "admin"}
                   onClick={() => setRole(u, "admin")}
                 >
-                  <ShieldCheck className="h-3 w-3" /> Admin
+                  <ShieldCheck className="h-3 w-3" /> {t("admin.users.admin")}
                 </Button>
+
                 {u.banned ? (
                   <Button
                     size="sm"
@@ -341,7 +349,7 @@ function AdminUsersPage() {
                     disabled={u.id === me?.id}
                     onClick={() => setBanTarget(u)}
                   >
-                    <CheckCircle2 className="h-3 w-3" /> Unban
+                    <CheckCircle2 className="h-3 w-3" /> {t("admin.users.unban")}
                   </Button>
                 ) : (
                   <Button
@@ -351,9 +359,10 @@ function AdminUsersPage() {
                     disabled={u.id === me?.id || u.role === "admin"}
                     onClick={() => setBanTarget(u)}
                   >
-                    <Ban className="h-3 w-3" /> Ban
+                    <Ban className="h-3 w-3" /> {t("admin.users.ban")}
                   </Button>
                 )}
+
               </div>
             </div>
           ))}
@@ -373,7 +382,7 @@ function AdminUsersPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-accent" />
-              AI role suggestion
+              {t("admin.users.aiRoleSuggestion")}
             </DialogTitle>
             <DialogDescription>
               {suggestionFor?.display_name ?? suggestionFor?.email}
@@ -383,13 +392,14 @@ function AdminUsersPage() {
           {suggestMutation.isPending || !suggestion ? (
             <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Analysing user activity…
+              {t("admin.users.analysing")}
+
             </div>
           ) : (
             <div className="space-y-4">
               <div className="rounded-md border border-border bg-secondary/40 p-3">
                 <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Recommended role
+                  {t("admin.users.recommendedRole")}
                 </div>
                 <div className="mt-1 flex items-center justify-between">
                   <Badge
@@ -402,27 +412,28 @@ function AdminUsersPage() {
                     }`}
                     variant="outline"
                   >
-                    {suggestion.suggested}
+                    {t(`roles.${suggestion.suggested}`)}
                   </Badge>
                   <div className="text-xs text-muted-foreground">
-                    Confidence: <span className="font-medium text-foreground">{suggestion.confidence}%</span>
+                    {t("admin.users.confidence")}: <span className="font-medium text-foreground">{localNum(suggestion.confidence)}%</span>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <Stat label="Reports" value={suggestion.stats.total} />
-                <Stat label="Verified" value={suggestion.stats.verified} />
-                <Stat label="Accuracy" value={`${suggestion.stats.accuracy}%`} />
-                <Stat label="Rejected" value={suggestion.stats.rejected} />
-                <Stat label="Comments" value={suggestion.stats.comments} />
-                <Stat label="Days" value={suggestion.stats.ageDays} />
+                <Stat label={t("admin.users.stats.reports")} value={localNum(suggestion.stats.total)} />
+                <Stat label={t("admin.users.stats.verified")} value={localNum(suggestion.stats.verified)} />
+                <Stat label={t("admin.users.stats.accuracy")} value={`${localNum(suggestion.stats.accuracy)}%`} />
+                <Stat label={t("admin.users.stats.rejected")} value={localNum(suggestion.stats.rejected)} />
+                <Stat label={t("admin.users.stats.comments")} value={localNum(suggestion.stats.comments)} />
+                <Stat label={t("admin.users.stats.days")} value={localNum(suggestion.stats.ageDays)} />
               </div>
 
               {suggestion.aiReason && (
                 <div className="rounded-md border border-accent/30 bg-accent/5 p-3 text-xs">
                   <div className="font-mono text-[10px] uppercase tracking-wider text-accent">
-                    AI reasoning
+                    {t("admin.users.aiReasoning")}
+
                   </div>
                   <p className="mt-1 text-foreground">{suggestion.aiReason}</p>
                 </div>
@@ -438,7 +449,7 @@ function AdminUsersPage() {
 
               <div className="flex items-center gap-1 rounded-md border border-dashed border-border p-2 text-[11px] text-muted-foreground">
                 <Mail className="h-3 w-3" />
-                The user will receive an email when you apply this role.
+                {t("admin.users.emailNotice")}
               </div>
             </div>
           )}
@@ -451,7 +462,7 @@ function AdminUsersPage() {
                 setSuggestion(null);
               }}
             >
-              Close
+              {t("admin.users.close")}
             </Button>
             <Button
               disabled={!suggestion || !suggestionFor || suggestion.suggested === suggestionFor.role}
@@ -463,7 +474,8 @@ function AdminUsersPage() {
                 await setRole(u, suggestion.suggested);
               }}
             >
-              Apply {suggestion?.suggested ?? "role"}
+              {t("admin.users.apply")} {suggestion ? t(`roles.${suggestion.suggested}`) : t("admin.users.role")}
+
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -474,20 +486,20 @@ function AdminUsersPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {banTarget?.banned ? (
-                <><CheckCircle2 className="h-4 w-4 text-success" /> Unban user</>
+                <><CheckCircle2 className="h-4 w-4 text-success" /> {t("admin.users.unbanUser")}</>
               ) : (
-                <><Ban className="h-4 w-4 text-destructive" /> Ban user</>
+                <><Ban className="h-4 w-4 text-destructive" /> {t("admin.users.banUser")}</>
               )}
             </DialogTitle>
             <DialogDescription>
               {banTarget?.banned
-                ? `Restore access for ${banTarget?.display_name ?? banTarget?.email}? They will be able to sign in and submit reports again.`
-                : `Block ${banTarget?.display_name ?? banTarget?.email} from signing in or using the platform. Their existing reports stay visible.`}
+                ? t("admin.users.unbanConfirm", { name: banTarget?.display_name ?? banTarget?.email ?? "" })
+                : t("admin.users.banConfirm", { name: banTarget?.display_name ?? banTarget?.email ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" disabled={banPending} onClick={() => setBanTarget(null)}>
-              Cancel
+              {t("admin.users.cancel")}
             </Button>
             <Button
               variant={banTarget?.banned ? "default" : "destructive"}
@@ -497,7 +509,7 @@ function AdminUsersPage() {
                 setBanPending(true);
                 try {
                   await banFn({ data: { userId: banTarget.id, banned: !banTarget.banned } });
-                  toast.success(banTarget.banned ? "User unbanned" : "User banned");
+                  toast.success(banTarget.banned ? t("admin.users.unbanned") : t("admin.users.banned2"));
                   setBanTarget(null);
                   void qc.invalidateQueries({ queryKey: ["admin-users"] });
                 } catch (e) {
@@ -508,8 +520,9 @@ function AdminUsersPage() {
               }}
             >
               {banPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-              {banTarget?.banned ? "Unban" : "Ban"}
+              {banTarget?.banned ? t("admin.users.unban") : t("admin.users.ban")}
             </Button>
+
           </DialogFooter>
         </DialogContent>
       </Dialog>
