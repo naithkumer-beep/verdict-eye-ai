@@ -186,6 +186,7 @@ function LandingPage() {
               ["2", MapIcon, "Pin the location", "We auto-capture your GPS, or you drop a pin anywhere on the Yangon map."],
               ["3", Building2, "Auto-routed", "Your report is automatically assigned to the right authority — YCDC, YESC, or Police."],
               ["4", CheckCircle2, "Tracked & resolved", "Follow the status live. When an admin marks it resolved, you get notified."],
+            ] as const).map(([n, Icon, title, body], idx) => {
             ] as const).map(([n, Icon, title, body]) => (
               <li
                 key={n}
