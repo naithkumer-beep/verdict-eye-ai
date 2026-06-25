@@ -205,3 +205,65 @@ function ReportsList() {
     </div>
   );
 }
+
+function HoverCarousel({ urls }: { urls: string[] }) {
+  const [idx, setIdx] = useState(0);
+  const [hover, setHover] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (hover && urls.length > 1) {
+      timerRef.current = setInterval(() => {
+        setIdx((i) => (i + 1) % urls.length);
+      }, 900);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = null;
+    };
+  }, [hover, urls.length]);
+
+  useEffect(() => {
+    if (!hover) setIdx(0);
+  }, [hover]);
+
+  if (!urls.length) {
+    return (
+      <div className="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-dashed border-border text-[10px] text-muted-foreground">
+        No img
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      {urls.map((u, i) => (
+        <img
+          key={u}
+          src={u}
+          alt=""
+          loading="lazy"
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
+            i === idx ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+      {urls.length > 1 && (
+        <div className="absolute inset-x-1 bottom-1 flex justify-center gap-0.5">
+          {urls.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1 w-1 rounded-full transition-colors ${
+                i === idx ? "bg-white" : "bg-white/40"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
