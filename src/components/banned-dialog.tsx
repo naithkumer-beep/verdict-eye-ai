@@ -1,6 +1,7 @@
 // Global popup shown when the current account is detected as banned.
 // Triggered by failed sign-in attempts and by background re-validation.
 import { Ban } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +14,7 @@ import {
 import { useAuthStore } from "@/lib/auth-store";
 
 export function BannedDialog() {
+  const { t } = useTranslation();
   const open = useAuthStore((s) => s.bannedDialogOpen);
   const setOpen = useAuthStore((s) => s.setBannedDialogOpen);
 
@@ -24,17 +26,15 @@ export function BannedDialog() {
             <Ban className="h-6 w-6 text-destructive" />
           </div>
           <AlertDialogTitle className="text-center">
-            Your account is banned by the admin.
+            {t("banned.title")}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Your account has been banned by an administrator. You have been signed
-            out and can no longer access the platform. If you believe this is a
-            mistake, please contact support to appeal.
+            {t("banned.description")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction onClick={() => setOpen(false)} className="w-full">
-            Understood
+            {t("banned.action")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
