@@ -160,7 +160,7 @@ function NewReport() {
   const runPipeline = async () => {
     if (!file || !user) return;
     if (!title.trim() || !description.trim()) {
-      toast.error("Title and description are required.");
+      toast.error(t("newReport.titleDescRequired"));
       return;
     }
 
@@ -173,7 +173,7 @@ function NewReport() {
       const tech = await technicalValidate(file);
       if (!tech.ok) {
         updateStage("technical", "failed", tech.reason);
-        toast.error(`Invalid image: ${tech.reason}`);
+        toast.error(`${t("newReport.invalidImage")}: ${tech.reason}`);
         return;
       }
       updateStage("technical", "passed", `${tech.width}×${tech.height} • ${(tech.size! / 1024).toFixed(0)} KB`);
