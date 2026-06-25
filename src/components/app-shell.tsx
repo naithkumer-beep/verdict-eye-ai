@@ -220,7 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               size="icon"
               className="lg:hidden"
               onClick={() => setOpen(true)}
-              aria-label="Open menu"
+              aria-label={t("nav.openMenu")}
             >
               <Menu className="h-4 w-4" />
             </Button>
