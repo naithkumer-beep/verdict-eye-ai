@@ -25,7 +25,7 @@ const STATUS_COLOR: Record<string, string> = {
   pending: "bg-warning/15 text-warning border-warning/30",
   analyzing: "bg-info/15 text-info border-info/30",
   verified: "bg-success/15 text-success border-success/30",
-  resolved: "bg-success/15 text-success border-success/30",
+  resolved: "bg-green/15 text-green border-green/40",
   rejected: "bg-destructive/15 text-destructive border-destructive/30",
 };
 
