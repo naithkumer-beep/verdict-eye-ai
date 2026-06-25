@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { localRelative } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({ meta: [{ title: "Notifications — CIAP" }] }),
