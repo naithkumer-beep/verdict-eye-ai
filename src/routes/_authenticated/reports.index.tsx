@@ -84,6 +84,7 @@ function ReportsList() {
   });
 
   const filtered = reports.filter((r) => {
+    if (scope === "mine" && r.user_id !== user?.id) return false;
     if (status !== "all" && r.status !== status) return false;
     if (category !== "all" && r.category !== category) return false;
     if (q && !r.title.toLowerCase().includes(q.toLowerCase())) return false;
