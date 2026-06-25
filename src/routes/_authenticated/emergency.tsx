@@ -67,11 +67,9 @@ function EmergencyPage() {
       </div>
 
       <Card className="border-destructive/30 bg-destructive/5 p-4 text-sm">
-        <div className="font-medium text-destructive">⚠ For life-threatening emergencies</div>
+        <div className="font-medium text-destructive">{t("emergency.warning")}</div>
         <p className="mt-1 text-muted-foreground">
-          Always call directly — do not rely on submitting a CivicLens AI report. Use this platform
-          for non-urgent civic issues such as potholes, garbage, broken street lights, drainage, and
-          vandalism.
+          {t("emergency.warningBody")}
         </p>
       </Card>
     </div>
