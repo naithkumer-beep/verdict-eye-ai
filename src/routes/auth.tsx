@@ -128,11 +128,23 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     setLoading(true);
+    const dest = search.redirect ?? "/reports";
+    // Remember where to land after the provider returns to the site origin.
+    try {
+      sessionStorage.setItem("ciap-post-auth-redirect", dest);
+    } catch {
+      /* ignore */
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
       setLoading(false);
+      try {
+        sessionStorage.removeItem("ciap-post-auth-redirect");
+      } catch {
+        /* ignore */
+      }
       const msg = result.error.message ?? "Sign in failed";
       if (isBanError(msg)) {
         showBannedMessage();
@@ -142,8 +154,16 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: search.redirect ?? "/reports", replace: true });
+    try {
+      sessionStorage.removeItem("ciap-post-auth-redirect");
+    } catch {
+      /* ignore */
+    }
+    // Ensure the session is persisted before entering the protected subtree.
+    await supabase.auth.getSession();
+    navigate({ to: dest, replace: true });
   };
+
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
