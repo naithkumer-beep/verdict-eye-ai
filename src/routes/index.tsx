@@ -1,5 +1,7 @@
 // Public landing page — explains what CivicLens AI does for Yangon residents.
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
@@ -43,6 +45,22 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   const user = useAuthStore((s) => s.user);
+  const initialized = useAuthStore((s) => s.initialized);
+  const loading = useAuthStore((s) => s.loading);
+  const navigate = useNavigate();
+
+  // After an OAuth round-trip the provider returns to the site origin ("/").
+  // Once the session is restored, continue to the intended app page instead of
+  // leaving the freshly signed-in user on the landing page.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!initialized || loading || !user) return;
+    const pending = sessionStorage.getItem("ciap-post-auth-redirect");
+    if (!pending) return;
+    sessionStorage.removeItem("ciap-post-auth-redirect");
+    navigate({ to: pending, replace: true });
+  }, [user, initialized, loading, navigate]);
+
 
   return (
     <div className="min-h-screen bg-background">
